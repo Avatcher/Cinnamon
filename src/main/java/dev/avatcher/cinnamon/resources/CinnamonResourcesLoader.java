@@ -39,24 +39,6 @@ public class CinnamonResourcesLoader implements AutoCloseable {
     @Setter
     private CinnamonConfig config;
 
-//    public CinnamonResourcesLoader(Plugin plugin, Class<?> resource) throws CinnamonResourcesInitializationException {
-//        try {
-//            this.plugin = plugin;
-//            this.resource = resource;
-//            this.clazzLoader = resource.getClassLoader();
-//            String jarPath = resource
-//                    .getProtectionDomain()
-//                    .getCodeSource()
-//                    .getLocation()
-//                    .toURI()
-//                    .getPath();
-//            URI uri = URI.create("jar:file:" + jarPath);
-//            this.fileSystem = FileSystems.newFileSystem(uri, Map.of());
-//            this.folder = fileSystem.getPath(CINNAMON_FOLDER);
-//        } catch (Throwable e) {
-//            throw new CinnamonResourcesInitializationException(resource, e);
-//        }
-//    }
     public CinnamonResourcesLoader(CinnamonResources resources) {
         this.resources = resources;
     }
