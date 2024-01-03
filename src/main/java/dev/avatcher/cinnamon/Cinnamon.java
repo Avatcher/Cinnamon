@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -54,7 +55,11 @@ public final class Cinnamon extends JavaPlugin {
         CommandAPI.onEnable();
         instance = this;
         log = this.getLogger();
-        this.resourcesManager = new CinnamonResourcesManager();
+        try {
+            this.resourcesManager = new CinnamonResourcesManager();
+        } catch (IOException e) {
+            throw new CinnamonRuntimeException(e);
+        }
         this.registerEvents(
                 new ItemEventListener()
         );

@@ -9,9 +9,10 @@ import java.nio.file.Path;
 
 public interface CinnamonResources extends Closeable {
     String CONFIG_FILE = "cinnamon-resources.yml";
-    String ITEMS_FOLDER_PATH = "items/";
+    String ITEMS_FOLDER = "items/";
     String BLOCKS_FOLDER = "blocks/";
     String ASSETS_FOLDER = "assets/";
+    String MODELS_FOLDER = "models/item/";
 
     Path getFolder();
 
@@ -24,7 +25,13 @@ public interface CinnamonResources extends Closeable {
     }
 
     default Path getItemsFolder() {
-        return this.getFolder().resolve(ITEMS_FOLDER_PATH);
+        return this.getFolder().resolve(ITEMS_FOLDER);
+    }
+
+    default Path getCustomModelsFolder() {
+        return this.getAssetsFolder()
+                .resolve(this.getPlugin().getName().toLowerCase())
+                .resolve(MODELS_FOLDER);
     }
 
     default Path getBlocksFolder() {

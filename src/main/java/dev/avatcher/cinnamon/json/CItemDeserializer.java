@@ -21,11 +21,13 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public CItem deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+    public CItem deserialize(JsonElement jsonElement, Type type,
+                             JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         JsonObject jObject = jsonElement.getAsJsonObject();
 
         NamespacedKey identifier = new NamespacedKey(plugin, jObject.get("identifier").getAsString());
-        CustomModelData model = new CustomModelData(identifier, 70000);
+        CustomModelData model = CustomModelData.of(NamespacedKey.fromString(jObject.get("model").getAsString()))
+                .orElseThrow();
         Component name = (jObject.get("name").isJsonObject()
                 ? Component.translatable(jObject.get("name").getAsJsonObject().get("translation").getAsString())
                 : Component.text(jObject.get("name").getAsString()))
@@ -35,7 +37,8 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
             try {
                 Class<?> clazz = Class.forName(jObject.get("class").getAsString());
                 if (!CItemBehaviour.class.isAssignableFrom(clazz)) {
-                    throw new JsonParseException("Custom item behaviour class '" + clazz.getName() + "' does not implement '" + CItemBehaviour.class.getName() + "'");
+                    throw new JsonParseException("Custom item behaviour class '" + clazz.getName()
+                            + "' does not implement '" + CItemBehaviour.class.getName() + "'");
                 }
                 behaviourClazz = (Class<? extends CItemBehaviour>) clazz;
             } catch (ClassNotFoundException e) {
