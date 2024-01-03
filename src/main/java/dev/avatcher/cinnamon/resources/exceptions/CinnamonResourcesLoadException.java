@@ -4,8 +4,6 @@ import dev.avatcher.cinnamon.exceptions.CinnamonException;
 import dev.avatcher.cinnamon.resources.CinnamonResources;
 import lombok.Getter;
 
-import java.util.logging.Logger;
-
 @Getter
 public class CinnamonResourcesLoadException extends CinnamonException {
     private final CinnamonResources resources;

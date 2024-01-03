@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.config.CinnamonConfig;
-import dev.avatcher.cinnamon.exceptions.CinnamonException;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.CItemDeserializer;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonConfigLoadException;
@@ -17,12 +16,13 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class CinnamonResourcesLoader implements AutoCloseable {
-    public static final String ITEMS_FOLDER = "items";
     public static final String CONFIG_FILE = "cinnamon.yml";
 
     private final Logger log;

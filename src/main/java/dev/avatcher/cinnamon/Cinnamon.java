@@ -15,7 +15,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -79,7 +78,6 @@ public final class Cinnamon extends JavaPlugin {
      * @param listeners Event listeners
      * @return this
      */
-    @Contract("_ -> this")
     private void registerEvents(Listener @NotNull ... listeners) {
         var manager = Bukkit.getPluginManager();
         for (var listener : listeners) manager.registerEvents(listener, this);
