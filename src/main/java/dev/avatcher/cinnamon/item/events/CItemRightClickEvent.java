@@ -7,6 +7,10 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Event for {@link dev.avatcher.cinnamon.item.CItemBehaviour#onRightClick(CItemRightClickEvent)},
+ * when a player right clicks with a custom item in hand
+ */
 @Getter
 @Builder
 public class CItemRightClickEvent {

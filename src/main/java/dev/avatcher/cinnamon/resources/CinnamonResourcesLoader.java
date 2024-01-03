@@ -22,14 +22,21 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Loader of Cinnamon resources
+ */
 public class CinnamonResourcesLoader implements AutoCloseable {
-    public static final String CONFIG_FILE = "cinnamon.yml";
-
     private final Logger log;
 
+    /**
+     * Cinnamon resources
+     */
     @Getter
     private final CinnamonResources resources;
 
+    /**
+     * Loader configuration loaded from {@value CinnamonResources#CONFIG_FILE} file
+     */
     @Getter
     @Setter
     private CinnamonConfig config;
@@ -44,6 +51,11 @@ public class CinnamonResourcesLoader implements AutoCloseable {
         this.resources.close();
     }
 
+    /**
+     * Reads and returns configuration for resources loader.
+     *
+     * @return Configuration for {@link CinnamonResourcesLoader}
+     */
     public CinnamonConfig loadConfig() throws CinnamonConfigLoadException {
         Path configPath = this.resources.getConfig();
         try (var in = new InputStreamReader(this.resources.read(configPath))) {
@@ -53,6 +65,11 @@ public class CinnamonResourcesLoader implements AutoCloseable {
         }
     }
 
+    /**
+     * Reads and returns custom items from {@link #resources}.
+     *
+     * @return A {@link List} of custom items
+     */
     public List<CItem> loadItems() throws CinnamonResourcesLoadException {
         Path itemsFolder = this.resources.getItemsFolder();
         try (var walker = Files.walk(itemsFolder)) {
@@ -77,6 +94,11 @@ public class CinnamonResourcesLoader implements AutoCloseable {
         }
     }
 
+    /**
+     * Reads and returns item model names from {@link #resources}.
+     *
+     * @return A {@link List} of item model names
+     */
     public List<NamespacedKey> loadCustomModelIdentifiers() throws CinnamonResourcesLoadException {
         Path modelsFolder = this.resources.getCustomModelsFolder();
         if (!Files.exists(modelsFolder)) return List.of();

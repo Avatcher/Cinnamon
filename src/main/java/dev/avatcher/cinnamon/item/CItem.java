@@ -3,7 +3,6 @@ package dev.avatcher.cinnamon.item;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.item.exceptions.CItemException;
-import dev.avatcher.cinnamon.resources.CinnamonResourcesManager;
 import dev.avatcher.cinnamon.resources.CustomModelData;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -162,10 +161,9 @@ public class CItem {
     /**
      * Returns {@link CItem} with the certain {@link CItem#identifier}.
      * Empty optional will be returned, if item was not found.
-     * Shortcut to {@link CinnamonResourcesManager#getCItem(NamespacedKey)}
      *
      * @param identifier Item's identifier
-     * @return Optional {@link CItem} (Empty, if was not find)
+     * @return Optional {@link CItem} (Empty, if item was not found)
      */
     public static Optional<CItem> of(NamespacedKey identifier) {
         return Cinnamon.getInstance().getResourcesManager().getCItem(identifier);

@@ -12,7 +12,14 @@ import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Type;
 
+/**
+ * Deserializer of JSON {@link CItem} instance
+ * inside {@link dev.avatcher.cinnamon.resources.CinnamonResources}
+ */
 public class CItemDeserializer implements JsonDeserializer<CItem> {
+    /**
+     * Owner plugin of the item
+     */
     private final Plugin plugin;
 
     public CItemDeserializer(Plugin plugin) {

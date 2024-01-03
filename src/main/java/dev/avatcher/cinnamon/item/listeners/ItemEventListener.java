@@ -9,8 +9,16 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Listener of item-related events
+ */
 public class ItemEventListener implements Listener {
 
+    /**
+     * Handles players' right click events
+     *
+     * @param event Event
+     */
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
         if (!this.isRightClick(event)
@@ -29,6 +37,12 @@ public class ItemEventListener implements Listener {
         cBehaviour.onRightClick(cEvent);
     }
 
+    /**
+     * Checks, if {@link PlayerInteractEvent} is a right click event.
+     *
+     * @param event Event
+     * @return {@code true}, if it is right click event
+     */
     private boolean isRightClick(@NotNull PlayerInteractEvent event) {
         return event.getAction().equals(Action.RIGHT_CLICK_AIR)
                 || (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)

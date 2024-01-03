@@ -9,9 +9,19 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * {@link CinnamonResources} implementation for
+ * resources inside a regular folder
+ */
 public class FolderCinnamonResources implements CinnamonResources {
+    /**
+     * Owner plugin of this resources
+     */
     @Getter
     private final Plugin plugin;
+    /**
+     * Folder with the resources inside
+     */
     private final Path folder;
 
     public FolderCinnamonResources(Plugin plugin, Path folder) {

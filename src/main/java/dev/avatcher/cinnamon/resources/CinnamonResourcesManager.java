@@ -23,15 +23,34 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Manager of Cinnamon resources such as custom items,
+ * item models or blocks.
+ *
+ * @see CinnamonResources
+ */
 public class CinnamonResourcesManager {
+    /**
+     * Path to plugin's folder with preload data
+     */
     public static final String PRELOAD_FOLDER = "preload";
-    private final Logger log;
 
+    /**
+     * Map of registered CustomModelData
+     */
     @Getter
     private final Map<NamespacedKey, CustomModelData> customModelMap;
+    /**
+     * Last {@link CustomModelData#numeric} assigned in CustomModelData registration
+     */
     private int lastCustomModelNumeric = CustomModelData.START_NUMERIC;
+    /**
+     * Map of registered custom items
+     */
     @Getter
     private final Map<NamespacedKey, CItem> customItemMap;
+
+    private final Logger log;
 
     public CinnamonResourcesManager() throws IOException {
         this.log = Cinnamon.getInstance().getLogger();
@@ -40,24 +59,53 @@ public class CinnamonResourcesManager {
         this.preload();
     }
 
-    public Optional<CustomModelData> getCustomModel(NamespacedKey identifier) {
+    /**
+     * Returns {@link CustomModelData} with the certain {@link CustomModelData#identifier}.
+     * Empty optional will be returned, if CustomModelData was not found.
+     *
+     * @param identifier Item's identifier
+     * @return Optional {@link CustomModelData} (Empty, if CustomModelData was not found)
+     */
+    public Optional<CustomModelData> getCustomModelData(NamespacedKey identifier) {
         return Optional.ofNullable(this.customModelMap.get(identifier));
     }
 
+    /**
+     * Returns {@link CItem} with the certain {@link CItem#identifier}.
+     * Empty optional will be returned, if item was not found.
+     *
+     * @param identifier Item's identifier
+     * @return Optional {@link CItem} (Empty, if item was not found)
+     */
     public Optional<CItem> getCItem(NamespacedKey identifier) {
         return Optional.ofNullable(this.customItemMap.get(identifier));
     }
 
+    /**
+     * Registers {@link CustomModelData}
+     *
+     * @param customModelData CustomModelData to be registered
+     */
     public void registerCustomModel(CustomModelData customModelData) {
         this.customModelMap.put(customModelData.identifier(), customModelData);
         log.info("Registered item model " + customModelData.identifier());
     }
 
+    /**
+     * Registers {@link CItem}
+     *
+     * @param cItem CItem to be registered
+     */
     public void registerCItem(CItem cItem) {
         this.customItemMap.put(cItem.getIdentifier(), cItem);
         log.info("Registered item " + cItem.getIdentifier());
     }
 
+    /**
+     * Loads certain Cinnamon resources.
+     *
+     * @param resources Resources to be loaded
+     */
     public void load(CinnamonResources resources) {
         try (var loader = new CinnamonResourcesLoader(resources)) {
             CinnamonConfig config = loader.loadConfig();
@@ -76,6 +124,11 @@ public class CinnamonResourcesManager {
         }
     }
 
+    /**
+     * Loads CustomModelData from {@link CinnamonResourcesLoader}
+     *
+     * @param loader Loader of Cinnamon resources
+     */
     private void loadItemModels(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
         List<CustomModelData> models = loader.loadCustomModelIdentifiers().stream()
                 .filter(modelName -> !this.customModelMap.containsKey(modelName))
@@ -88,6 +141,11 @@ public class CinnamonResourcesManager {
         }
     }
 
+    /**
+     * Loads custom items from {@link CinnamonResourcesLoader}
+     *
+     * @param loader Loader of Cinnamon resources
+     */
     private void loadItems(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
         List<CItem> items = loader.loadItems();
         items.forEach(this::registerCItem);
@@ -95,6 +153,11 @@ public class CinnamonResourcesManager {
                 + loader.getResources().getPlugin().getName() + "'");
     }
 
+    /**
+     * Preloads some data from Cinnamon's {@value #PRELOAD_FOLDER} data folder.
+     * This is a very important method, as it loads some previously registered
+     * resources in Cinnamon.
+     */
     private void preload() throws IOException {
         Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         if (!Files.exists(folder)) return;
@@ -121,6 +184,10 @@ public class CinnamonResourcesManager {
         }
     }
 
+    /**
+     * Saves some important registered resources into
+     * Cinnamon's {@value #PRELOAD_FOLDER} data folder.
+     */
     private void savePreload() throws IOException {
         Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         Files.createDirectories(folder);

@@ -20,10 +20,23 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
 
+/**
+ * A Minecraft command for giving a custom item
+ *
+ * @see CItem
+ */
 public class CGiveCommand {
-
+    /**
+     * Command's in-game name
+     */
     private static final String NAME = "cgive";
 
+    /**
+     * Execution for when a player runs the command.
+     *
+     * @param player Player that ran the command
+     * @param args   Command arguments
+     */
     public void executePlayer(Player player, CommandArguments args) {
         player.sendMessage("CINNAMON COMMAND");
         Player target = (Player) args.get("target");
@@ -65,6 +78,12 @@ public class CGiveCommand {
         );
     }
 
+    /**
+     * Constructs a {@link dev.jorel.commandapi.CommandAPICommand} instance
+     * for this command.
+     *
+     * @return A {@link CommandAPICommand} instance
+     */
     public CommandAPICommand getCommandAPICommand() {
         return new CommandAPICommand(NAME)
                 .withShortDescription("Gives a custom item")
@@ -72,14 +91,12 @@ public class CGiveCommand {
                 .withArguments(
                         new PlayerArgument("target"),
                         new NamespacedKeyArgument("item")
-                                .replaceSafeSuggestions(SafeSuggestions.suggest(info -> {
-//                                    String identifier = info.currentArg();
-                                    return Cinnamon.getInstance().getResourcesManager().getCustomItemMap().keySet()
+                                .replaceSafeSuggestions(SafeSuggestions.suggest(info ->
+                                        Cinnamon.getInstance().getResourcesManager().getCustomItemMap().keySet()
                                             .stream()
-//                                            .filter(name -> identifier.isEmpty() || name.asString().contains(identifier))
                                             .toList()
-                                            .toArray(new NamespacedKey[0]);
-                                }))
+                                                .toArray(new NamespacedKey[0])
+                                ))
                 )
                 .withOptionalArguments(
                         new IntegerArgument("amount", 1, 64)

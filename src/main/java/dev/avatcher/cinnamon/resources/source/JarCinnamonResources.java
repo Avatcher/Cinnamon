@@ -13,13 +13,33 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Map;
 
+/**
+ * {@link CinnamonResources} implementation for
+ * resources inside a .jar file
+ */
 public class JarCinnamonResources implements CinnamonResources {
+    /**
+     * Path to resources folder inside jar
+     */
     public static String CINNAMON_FOLDER = "cinnamon/";
 
+    /**
+     * Owner plugin of this resources
+     */
     @Getter
     private final Plugin plugin;
-    private final Class<?> clazz;
+    /**
+     * Cinnamon resources folder inside jar
+     */
+    @Getter
     private final Path folder;
+    /**
+     * Class from the .jar file
+     */
+    private final Class<?> clazz;
+    /**
+     * File system of the .jar as an archive
+     */
     private final FileSystem fileSystem;
 
     public JarCinnamonResources(Plugin plugin, Class<?> resource) throws CinnamonResourcesInitializationException {
@@ -42,11 +62,6 @@ public class JarCinnamonResources implements CinnamonResources {
 
     public JarCinnamonResources(Plugin plugin) throws CinnamonResourcesInitializationException {
         this(plugin, plugin.getClass());
-    }
-
-    @Override
-    public Path getFolder() {
-        return this.folder;
     }
 
     @Override
