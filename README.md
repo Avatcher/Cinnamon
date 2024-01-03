@@ -9,7 +9,7 @@ Cinnamon is a [PaperMC](https://papermc.io/) framework for easier development of
 - [ ] Resources management
   - [X] Reading resources from other plugin
   - [X] Items registration
-  - [ ] CustomModelData reservation
+  - [X] CustomModelData reservation
   - [ ] Noteblock tune reservation
   - [ ] Resource packs merge
 - [ ] Custom items
