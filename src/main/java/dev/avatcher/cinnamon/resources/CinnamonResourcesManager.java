@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dev.avatcher.cinnamon.Cinnamon;
-import dev.avatcher.cinnamon.config.CinnamonConfig;
+import dev.avatcher.cinnamon.config.CinnamonResourcesConfig;
 import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesLoadException;
@@ -41,9 +41,16 @@ public class CinnamonResourcesManager {
      * Path to Cinnamon's data folder with resource pack
      */
     public static final String RESOURCE_PACK_FOLDER = "resourcepack/";
-
+    /**
+     * Default pack.mcmeta file to be inserted in resourcepack
+     */
     private static final byte[] DEFAULT_PACK_MCMETA;
-
+    /**
+     * Template of Minecraft model for item containing model
+     * overrides depending on item's CustomModelData
+     *
+     * @see CustomModelData
+     */
     private static final String ITEM_MODEL_OVERRIDE_TEMPLATE;
 
     static {
@@ -135,7 +142,7 @@ public class CinnamonResourcesManager {
      */
     public void load(CinnamonResources resources) {
         try (var loader = new CinnamonResourcesLoader(resources)) {
-            CinnamonConfig config = loader.loadConfig();
+            CinnamonResourcesConfig config = loader.loadConfig();
             loader.setConfig(config);
 
             this.loadItemModels(loader);

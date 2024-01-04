@@ -3,7 +3,7 @@ package dev.avatcher.cinnamon.resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.avatcher.cinnamon.Cinnamon;
-import dev.avatcher.cinnamon.config.CinnamonConfig;
+import dev.avatcher.cinnamon.config.CinnamonResourcesConfig;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.CItemDeserializer;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonConfigLoadException;
@@ -39,7 +39,7 @@ public class CinnamonResourcesLoader implements AutoCloseable {
      */
     @Getter
     @Setter
-    private CinnamonConfig config;
+    private CinnamonResourcesConfig config;
 
     public CinnamonResourcesLoader(CinnamonResources resources) {
         this.log = Cinnamon.getInstance().getLogger();
@@ -56,10 +56,10 @@ public class CinnamonResourcesLoader implements AutoCloseable {
      *
      * @return Configuration for {@link CinnamonResourcesLoader}
      */
-    public CinnamonConfig loadConfig() throws CinnamonConfigLoadException {
+    public CinnamonResourcesConfig loadConfig() throws CinnamonConfigLoadException {
         Path configPath = this.resources.getConfig();
         try (var in = new InputStreamReader(this.resources.read(configPath))) {
-            return new Yaml().loadAs(in, CinnamonConfig.class);
+            return new Yaml().loadAs(in, CinnamonResourcesConfig.class);
         } catch (Throwable e) {
             throw new CinnamonConfigLoadException(this.resources, e);
         }
