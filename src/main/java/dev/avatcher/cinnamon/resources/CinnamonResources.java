@@ -14,7 +14,7 @@ public interface CinnamonResources extends Closeable {
     /**
      * Default path to configuration file
      *
-     * @see dev.avatcher.cinnamon.config.CinnamonConfig
+     * @see dev.avatcher.cinnamon.config.CinnamonResourcesConfig
      */
     String CONFIG_FILE = "cinnamon-resources.yml";
     /**
