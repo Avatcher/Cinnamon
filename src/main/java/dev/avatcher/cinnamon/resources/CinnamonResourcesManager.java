@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.resources;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.config.CinnamonConfig;
 import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
@@ -165,19 +166,15 @@ public class CinnamonResourcesManager {
         Path modelsPath = folder.resolve("models.json");
         if (Files.exists(modelsPath)) {
             try (var modelsReader = new InputStreamReader(Files.newInputStream(modelsPath))) {
-                @SuppressWarnings("unchecked")
-                Map<String, Integer> registeredModels = (Map<String, Integer>)
-                        ((Map<?, ?>) new Gson().fromJson(modelsReader, Map.class))
-                                .entrySet()
-                                .stream()
-                                .filter(entry -> entry.getKey().getClass().equals(String.class)
-                                        && entry.getValue().getClass().equals(Integer.class))
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                for (var entry : registeredModels.entrySet()) {
+                Map<String, Integer> itemModels = new Gson().fromJson(modelsReader, new TypeToken<>() {
+                });
+                for (var entry : itemModels.entrySet()) {
                     var model = new CustomModelData(NamespacedKey.fromString(entry.getKey()), entry.getValue());
-                    this.registerCustomModel(model);
+                    this.customModelMap.put(model.identifier(), model);
+                    log.info("Preloaded item model " + model.identifier());
                 }
-                this.lastCustomModelNumeric = registeredModels.values().stream()
+                log.info("Preloaded a total of " + itemModels.size() + " item models");
+                this.lastCustomModelNumeric = itemModels.values().stream()
                         .max(Integer::compareTo)
                         .orElse(CustomModelData.START_NUMERIC);
             }
