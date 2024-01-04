@@ -11,7 +11,8 @@ Cinnamon is a [PaperMC](https://papermc.io/) framework for easier development of
   - [X] Items registration
   - [X] CustomModelData reservation
   - [ ] Noteblock tune reservation
-  - [ ] Resource packs merge
+  - [X] Resource packs merge
+  - [ ] Resource pack transmitting
 - [ ] Custom items
   - [X] Deserialization from JSON
   - [ ] Events for [CItemBehaviour](./src/main/java/dev/avatcher/cinnamon/item/CItemBehaviour.java)
