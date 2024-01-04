@@ -211,9 +211,9 @@ public class CinnamonResourcesManager {
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
         String modelOverridesValues = this.customModelMap.values().stream()
-                .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %s}, \"model\": \"%s\" }"
+                .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %d }, \"model\": \"%s\" }"
                         .formatted(model.numeric(), model.identifier()))
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(",\n"));
         String modelOverrides = ITEM_MODEL_OVERRIDE_TEMPLATE
                 .formatted(CItem.MATERIAL.getKey(), modelOverridesValues);
         Files.write(modelOverridesPath, modelOverrides.getBytes());
@@ -239,7 +239,7 @@ public class CinnamonResourcesManager {
     private void loadItemModels(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
         List<CustomModelData> models = loader.loadCustomModelIdentifiers().stream()
                 .filter(modelName -> !this.customModelMap.containsKey(modelName))
-                .map(modelName -> new CustomModelData(modelName, this.lastCustomModelNumeric++))
+                .map(modelName -> new CustomModelData(modelName, ++this.lastCustomModelNumeric))
                 .toList();
         models.forEach(this::registerCustomModel);
         if (!models.isEmpty()) {
