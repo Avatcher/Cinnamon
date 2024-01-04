@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -32,9 +34,33 @@ import java.util.stream.Collectors;
  */
 public class CinnamonResourcesManager {
     /**
-     * Path to plugin's folder with preload data
+     * Path to Cinnamon's data folder with preload data
      */
-    public static final String PRELOAD_FOLDER = "preload";
+    public static final String PRELOAD_FOLDER = "preload/";
+    /**
+     * Path to Cinnamon's data folder with resource pack
+     */
+    public static final String RESOURCE_PACK_FOLDER = "resourcepack/";
+
+    private static final byte[] DEFAULT_PACK_MCMETA;
+
+    private static final String ITEM_MODEL_OVERRIDE_TEMPLATE;
+
+    static {
+        try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(RESOURCE_PACK_FOLDER + "pack.mcmeta")) {
+            assert in != null;
+            DEFAULT_PACK_MCMETA = in.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(
+                RESOURCE_PACK_FOLDER + "item_model_override.json")) {
+            byte[] bytes = in.readAllBytes();
+            ITEM_MODEL_OVERRIDE_TEMPLATE = new String(bytes, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Map of registered CustomModelData
@@ -114,15 +140,95 @@ public class CinnamonResourcesManager {
 
             this.loadItemModels(loader);
             this.loadItems(loader);
+            this.loadAssets(loader);
 
             this.savePreload();
         } catch (CinnamonResourcesLoadException e) {
-            log.log(Level.SEVERE, e.getMessage(), e);
+            log.severe(e.getMessage());
+            log.log(Level.SEVERE, e.getCause().getMessage(), e.getCause());
             log.severe("Failed to load resources '" + resources + "' for plugin '"
                     + resources.getPlugin().getName() + "'");
         } catch (IOException e) {
             throw new CinnamonRuntimeException(e);
         }
+    }
+
+    /**
+     * Loads assets and adds them into Cinnamon's resource pack.
+     * Resource pack is created under Cinnamon's plugin folder {@value RESOURCE_PACK_FOLDER}.
+     *
+     * @param loader Loader of Cinnamon resources
+     */
+    private void loadAssets(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
+        if (!Files.exists(loader.getResources().getAssetsFolder())) return;
+        Path resourcePack = Cinnamon.getInstance().getDataFolder().toPath().resolve(RESOURCE_PACK_FOLDER);
+        Path resourcePackAssets = resourcePack.resolve(CinnamonResources.ASSETS_FOLDER);
+        try {
+            Files.createDirectories(resourcePackAssets);
+            Path assets = loader.getResources().getAssetsFolder();
+            this.copyAssets(assets, resourcePackAssets);
+            this.generateItemModelOverrides(resourcePackAssets);
+            this.addPackMeta(resourcePack);
+        } catch (IOException e) {
+            throw new CinnamonResourcesLoadException(loader.getResources(), "Failed to load assets from resource "
+                    + loader.getResources(), e);
+        }
+    }
+
+    /**
+     * Copies assets from one folder into another
+     *
+     * @param assets             Source folder
+     * @param resourcePackAssets Target folder
+     */
+    private void copyAssets(Path assets, Path resourcePackAssets) throws IOException {
+        try (var walker = Files.walk(assets)) {
+            walker.filter(Files::isRegularFile).forEach(file -> {
+                String relative = assets.relativize(file).toString();
+                Path fileInResourcePack = resourcePackAssets.resolve(relative);
+                try {
+                    Files.createDirectories(fileInResourcePack.resolve(".."));
+                    Files.copy(file, resourcePackAssets.resolve(relative));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Generates .json model for {@link CItem#MATERIAL} with all
+     * the registered {@link CustomModelData}.
+     *
+     * @param resourcePackAssets Resource pack assets folder
+     */
+    private void generateItemModelOverrides(Path resourcePackAssets) throws IOException {
+        Path modelOverridesPath = resourcePackAssets
+                .resolve("minecraft/")
+                .resolve(CinnamonResources.MODELS_FOLDER)
+                .resolve("item/")
+                .resolve(String.valueOf(CItem.MATERIAL).toLowerCase() + ".json");
+        Files.createDirectories(modelOverridesPath.resolve(".."));
+
+        String modelOverridesValues = this.customModelMap.values().stream()
+                .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %s}, \"model\": \"%s\" }"
+                        .formatted(model.numeric(), model.identifier()))
+                .collect(Collectors.joining(","));
+        String modelOverrides = ITEM_MODEL_OVERRIDE_TEMPLATE
+                .formatted(CItem.MATERIAL.getKey(), modelOverridesValues);
+        Files.write(modelOverridesPath, modelOverrides.getBytes());
+    }
+
+    /**
+     * Adds pack.mcmeta in resource pack, if not present.
+     *
+     * @param resourcePack Resource pack folder
+     */
+    private void addPackMeta(Path resourcePack) throws IOException {
+        Path packMeta = resourcePack.resolve("pack.mcmeta");
+        if (Files.exists(packMeta)) return;
+        Files.createDirectories(packMeta.resolve(".."));
+        Files.write(packMeta, DEFAULT_PACK_MCMETA);
     }
 
     /**

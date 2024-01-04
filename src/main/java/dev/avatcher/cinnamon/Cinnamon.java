@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -72,6 +73,10 @@ public final class Cinnamon extends JavaPlugin {
         instance = this;
         log = this.getLogger();
         try {
+            FileUtils.deleteDirectory(this.getDataFolder().toPath()
+                    .resolve(CinnamonResourcesManager.RESOURCE_PACK_FOLDER)
+                    .resolve("assets/")
+                    .toFile());
             this.resourcesManager = new CinnamonResourcesManager();
         } catch (IOException e) {
             throw new CinnamonRuntimeException(e);

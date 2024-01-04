@@ -34,7 +34,7 @@ public interface CinnamonResources extends Closeable {
     /**
      * Default path to folder with item models inside {@value #ASSETS_FOLDER}
      */
-    String MODELS_FOLDER = "models/item/";
+    String MODELS_FOLDER = "models/";
 
     /**
      * Gets {@link Path} to folder with resources.

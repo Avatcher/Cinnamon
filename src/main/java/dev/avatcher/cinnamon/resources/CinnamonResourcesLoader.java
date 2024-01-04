@@ -102,10 +102,10 @@ public class CinnamonResourcesLoader implements AutoCloseable {
     public List<NamespacedKey> loadCustomModelIdentifiers() throws CinnamonResourcesLoadException {
         Path modelsFolder = this.resources.getCustomModelsFolder();
         if (!Files.exists(modelsFolder)) return List.of();
-        try (var walker = Files.walk(modelsFolder)) {
+        try (var walker = Files.walk(modelsFolder.resolve("item/"))) {
             return walker.filter(Files::isRegularFile)
                     .map(f -> {
-                        String fName = f.getFileName().toString();
+                        String fName = modelsFolder.relativize(f).toString();
                         return fName.substring(0, fName.indexOf(".json"));
                     })
                     .map(name -> new NamespacedKey(this.resources.getPlugin(), name))
