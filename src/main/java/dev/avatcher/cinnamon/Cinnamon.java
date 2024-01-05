@@ -141,7 +141,7 @@ public final class Cinnamon extends JavaPlugin {
         try {
             var config = Cinnamon.getInstance().getConfig().getConfigurationSection("resourcepack");
             Objects.requireNonNull(config);
-            active = config.getBoolean("active");
+            active = config.getBoolean("do-transmit");
             int port = config.getInt("port");
             String context = config.getString("context");
             if (context == null) context = "resourcepack";
