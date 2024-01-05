@@ -1,4 +1,4 @@
-package dev.avatcher.cinnamon.config;
+package dev.avatcher.cinnamon.resources.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
