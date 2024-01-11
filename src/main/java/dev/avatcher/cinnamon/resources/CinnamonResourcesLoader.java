@@ -5,12 +5,18 @@ import com.google.gson.GsonBuilder;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.CItemDeserializer;
+import dev.avatcher.cinnamon.json.ItemStackDeserializer;
+import dev.avatcher.cinnamon.json.RecipeDeserializer;
+import dev.avatcher.cinnamon.json.value.Value;
+import dev.avatcher.cinnamon.json.value.ValueProvider;
 import dev.avatcher.cinnamon.resources.config.CinnamonResourcesConfig;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonConfigLoadException;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesLoadException;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
@@ -20,6 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -113,6 +121,44 @@ public class CinnamonResourcesLoader implements AutoCloseable {
         } catch (IOException e) {
             throw new CinnamonResourcesLoadException(this.resources,
                     String.format("Failed to load an item model from resource '%s'", this.resources), e);
+        }
+    }
+
+    /**
+     * Reads and returns a list of recipes and their identifiers from {@link #resources}.
+     *
+     * @return Recipe identifier and recipe
+     */
+    public List<Map.Entry<NamespacedKey, Recipe>> loadRecipes() throws CinnamonResourcesLoadException {
+        Path recipesFolder = this.resources.getRecipesFolder();
+        if (!Files.exists(recipesFolder)) return List.of();
+        try (var walker = Files.walk(recipesFolder)) {
+            ValueProvider<NamespacedKey> identifierProvider = new ValueProvider<>();
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Value.class, identifierProvider)
+                    .registerTypeAdapter(ItemStack.class, new ItemStackDeserializer())
+                    .registerTypeAdapter(Recipe.class, new RecipeDeserializer())
+                    .create();
+            return walker.filter(Files::isRegularFile)
+                    .map(recipePath -> {
+                        String relativeRecipePath = recipesFolder.relativize(recipePath).toString();
+                        String recipeName = relativeRecipePath.substring(0, relativeRecipePath.indexOf(".json"));
+                        NamespacedKey recipeIdentifier = new NamespacedKey(this.resources.getPlugin(), recipeName);
+                        identifierProvider.setValue(recipeIdentifier);
+                        try {
+                            return Map.entry(
+                                    recipeIdentifier,
+                                    gson.fromJson(Files.readString(recipePath), Recipe.class));
+                        } catch (IOException e) {
+                            log.warning("Failed to load recipe '" + recipeIdentifier + "'");
+                            log.warning(e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .toList();
+        } catch (IOException e) {
+            throw new CinnamonResourcesLoadException(this.resources, "", e);
         }
     }
 }
