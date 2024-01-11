@@ -58,3 +58,4 @@ shadowJar {
     }
     relocate("dev.jorel.commandapi", "dev.avatcher.cinnamon.commandapi")
 }
+tasks.build.dependsOn tasks.shadowJar
