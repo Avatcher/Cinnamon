@@ -9,9 +9,12 @@ import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.resources.config.CinnamonResourcesConfig;
 import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesLoadException;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
@@ -32,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @see CinnamonResources
  */
-public class CinnamonResourcesManager {
+public class CinnamonResourcesManager implements Closeable {
     /**
      * Path to Cinnamon's data folder with preload data
      */
@@ -83,6 +86,11 @@ public class CinnamonResourcesManager {
      */
     @Getter
     private final Map<NamespacedKey, CItem> customItemMap;
+    /**
+     * Map of registered custom recipes
+     */
+    @Getter
+    private final Map<NamespacedKey, Recipe> customRecipeMap;
 
     private final Logger log;
 
@@ -90,7 +98,14 @@ public class CinnamonResourcesManager {
         this.log = Cinnamon.getInstance().getLogger();
         this.customModelMap = new HashMap<>();
         this.customItemMap = new HashMap<>();
+        this.customRecipeMap = new HashMap<>();
         this.preload();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.savePreload();
+        customRecipeMap.keySet().forEach(Bukkit::removeRecipe);
     }
 
     /**
@@ -136,6 +151,18 @@ public class CinnamonResourcesManager {
     }
 
     /**
+     * Registers {@link Recipe}
+     *
+     * @param identifier Identifier of the recipe
+     * @param recipe Recipe
+     */
+    public void registerRecipe(NamespacedKey identifier, Recipe recipe) {
+        this.customRecipeMap.put(identifier, recipe);
+        Bukkit.addRecipe(recipe, true);
+        log.info("Registered recipe " + identifier);
+    }
+
+    /**
      * Loads certain Cinnamon resources.
      *
      * @param resources Resources to be loaded
@@ -147,6 +174,7 @@ public class CinnamonResourcesManager {
 
             this.loadItemModels(loader);
             this.loadItems(loader);
+            this.loadRecipes(loader);
             this.loadAssets(loader);
 
             this.savePreload();
@@ -264,6 +292,18 @@ public class CinnamonResourcesManager {
         List<CItem> items = loader.loadItems();
         items.forEach(this::registerCItem);
         log.info("Loaded a total of " + items.size() + " items for plugin '"
+                + loader.getResources().getPlugin().getName() + "'");
+    }
+
+    /**
+     * Loads recipes from {@link CinnamonResourcesLoader}
+     *
+     * @param loader Loader of Cinnamon resources
+     */
+    private void loadRecipes(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
+        List<Map.Entry<NamespacedKey, Recipe>> recipes = loader.loadRecipes();
+        recipes.forEach(recipe -> this.registerRecipe(recipe.getKey(), recipe.getValue()));
+        log.info("Loaded a total of " + recipes.size() + " recipes for plugin '"
                 + loader.getResources().getPlugin().getName() + "'");
     }
 
