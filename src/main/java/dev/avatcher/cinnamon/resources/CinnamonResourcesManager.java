@@ -21,10 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -239,18 +236,18 @@ public class CinnamonResourcesManager implements Closeable {
      */
     private void generateItemModelOverrides(Path resourcePackAssets) throws IOException {
         Path modelOverridesPath = resourcePackAssets
-                .resolve("minecraft/")
-                .resolve(CinnamonResources.MODELS_FOLDER)
-                .resolve("item/")
+                .resolve("minecraft/models/item/")
                 .resolve(String.valueOf(CItem.MATERIAL).toLowerCase() + ".json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
         String modelOverridesValues = this.customModelMap.values().stream()
+                .sorted(Comparator.comparingInt(CustomModelData::numeric))
                 .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %d }, \"model\": \"%s\" }"
                         .formatted(model.numeric(), model.identifier()))
                 .collect(Collectors.joining(",\n"));
+        NamespacedKey materialKey = CItem.MATERIAL.getKey();
         String modelOverrides = ITEM_MODEL_OVERRIDE_TEMPLATE
-                .formatted(CItem.MATERIAL.getKey(), modelOverridesValues);
+                .formatted(materialKey.getNamespace() + ":item/" + materialKey.getKey(), modelOverridesValues);
         Files.write(modelOverridesPath, modelOverrides.getBytes());
     }
 
