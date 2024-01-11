@@ -3,6 +3,7 @@ package dev.avatcher.cinnamon.json;
 import com.google.gson.*;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.json.recipes.ShapedRecipeDeserializer;
+import dev.avatcher.cinnamon.json.recipes.ShapelessRecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Recipe;
@@ -21,7 +22,8 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
      * Default JSON deserializers for different recipe types
      */
     public static final Map<String, JsonDeserializer<? extends Recipe>> DEFAULT_RECIPE_DESERIALIZERS = Map.of(
-            "crafting_shaped", new ShapedRecipeDeserializer()
+            "crafting_shaped", new ShapedRecipeDeserializer(),
+            "crafting_shapeless", new ShapelessRecipeDeserializer()
     );
 
     private final Logger log;
