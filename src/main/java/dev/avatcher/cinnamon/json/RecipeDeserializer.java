@@ -1,7 +1,9 @@
 package dev.avatcher.cinnamon.json;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.*;
 import dev.avatcher.cinnamon.Cinnamon;
+import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.recipes.ShapedRecipeDeserializer;
 import dev.avatcher.cinnamon.json.recipes.ShapelessRecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
@@ -26,6 +28,9 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
             "crafting_shapeless", new ShapelessRecipeDeserializer()
     );
 
+    public static final String TYPE_FIELD = "type";
+    public static final String RESULT_FIELD = "result";
+
     private final Logger log;
 
     /**
@@ -43,6 +48,10 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
         this(DEFAULT_RECIPE_DESERIALIZERS);
     }
 
+    public static String missingField(NamespacedKey recipeIdentifier, String jsonField) {
+        return "Missing JSON field '" + jsonField + "' in recipe " + recipeIdentifier;
+    }
+
     @Override
     public Recipe deserialize(
             JsonElement jsonElement,
@@ -52,11 +61,19 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
         NamespacedKey recipeIdentifier = jsonDeserializationContext
                 .<Value<NamespacedKey>>deserialize(jsonElement, Value.class).value();
 
+        Preconditions.checkNotNull(jObject.get(TYPE_FIELD), missingField(recipeIdentifier, TYPE_FIELD));
+        Preconditions.checkNotNull(jObject.get(RESULT_FIELD), missingField(recipeIdentifier, RESULT_FIELD));
+
         String recipeType = jObject.get("type").getAsString();
         if (recipeType == null || !this.deserializers.containsKey(recipeType)) {
             log.warning("Unknown recipe type '" + recipeType + "' in recipe " + recipeIdentifier);
             return null;
         }
-        return this.deserializers.get(recipeType).deserialize(jsonElement, type, jsonDeserializationContext);
+        Recipe recipe = this.deserializers.get(recipeType).deserialize(jsonElement, type, jsonDeserializationContext);
+        if (!CItem.isCustom(recipe.getResult())) {
+            log.warning("Vanilla item being a result of Cinnamon recipe is not allowed: " + recipeIdentifier);
+            return null;
+        }
+        return recipe;
     }
 }

@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.json.recipes;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
+import dev.avatcher.cinnamon.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -18,10 +19,6 @@ public class ShapelessRecipeDeserializer implements JsonDeserializer<ShapelessRe
      * JSON field containing recipe's ingredients
      */
     public static final String INGREDIENTS_FIELD = "ingredients";
-    /**
-     * JSON field containing the result item of recipe
-     */
-    public static final String RESULT_FIELD = "result";
 
     @Override
     public ShapelessRecipe deserialize(
@@ -32,10 +29,7 @@ public class ShapelessRecipeDeserializer implements JsonDeserializer<ShapelessRe
         NamespacedKey recipeIdentifier = context
                 .<Value<NamespacedKey>>deserialize(jsonElement, Value.class).value();
 
-        Preconditions.checkNotNull(jObject.get(INGREDIENTS_FIELD), "Missing JSON field '"
-                + INGREDIENTS_FIELD + "' in recipe " + recipeIdentifier);
-        Preconditions.checkNotNull(jObject.get(RESULT_FIELD), "Missing JSON field '"
-                + RESULT_FIELD + "' in recipe " + recipeIdentifier);
+        Preconditions.checkNotNull(jObject.get(INGREDIENTS_FIELD), RecipeDeserializer.missingField(recipeIdentifier, INGREDIENTS_FIELD));
 
         List<ItemStack> ingredients = jObject.get("ingredients").getAsJsonArray().asList()
                 .stream()

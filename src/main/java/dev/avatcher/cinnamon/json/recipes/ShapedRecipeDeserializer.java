@@ -1,6 +1,8 @@
 package dev.avatcher.cinnamon.json.recipes;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.*;
+import dev.avatcher.cinnamon.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import lombok.AllArgsConstructor;
 import org.bukkit.NamespacedKey;
@@ -18,13 +20,19 @@ import java.util.stream.Collectors;
  */
 @AllArgsConstructor
 public class ShapedRecipeDeserializer implements JsonDeserializer<ShapedRecipe> {
+    public static final String SHAPE_FIELD = "shape";
+    public static final String KEY_FIELD = "key";
+
     @Override
     public ShapedRecipe deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         JsonObject jObject = jsonElement.getAsJsonObject();
         NamespacedKey recipeIdentifier = jsonDeserializationContext
                 .<Value<NamespacedKey>>deserialize(jsonElement, Value.class).value();
 
-        List<JsonElement> jShape = jObject.get("shape").getAsJsonArray().asList();
+        Preconditions.checkNotNull(jObject.get(SHAPE_FIELD), RecipeDeserializer.missingField(recipeIdentifier, SHAPE_FIELD));
+        Preconditions.checkNotNull(jObject.get(KEY_FIELD), RecipeDeserializer.missingField(recipeIdentifier, KEY_FIELD));
+
+        List<JsonElement> jShape = jObject.get(SHAPE_FIELD).getAsJsonArray().asList();
         String[] shape = jShape.stream().map(JsonElement::getAsString).toList().toArray(new String[0]);
 
         JsonObject jKey = jObject.get("key").getAsJsonObject();
