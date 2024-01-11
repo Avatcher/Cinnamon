@@ -35,6 +35,10 @@ public interface CinnamonResources extends Closeable {
      * Default path to folder with item models inside {@value #ASSETS_FOLDER}
      */
     String MODELS_FOLDER = "models/";
+    /**
+     * Default path to folder with recipes
+     */
+    String RECIPES_FOLDER = "recipes/";
 
     /**
      * Gets {@link Path} to folder with resources.
@@ -103,5 +107,14 @@ public interface CinnamonResources extends Closeable {
      */
     default Path getAssetsFolder() {
         return this.getFolder().resolve(ASSETS_FOLDER);
+    }
+
+    /**
+     * Gets path to recipes folder.
+     *
+     * @return Path to recipes folder
+     */
+    default Path getRecipesFolder() {
+        return this.getFolder().resolve(RECIPES_FOLDER);
     }
 }
