@@ -1,5 +1,5 @@
 resourcepack:
   do-transmit: True
   port: 9300
-  context: "/resourcepack"
-  message: '{"text": "Please install our resourcepack. It is required for a better server experience.", "color": "yellow"}'
+  url: http://localhost:9300
+  message: {"text": "Please install our resourcepack.\nIt is required for a better server experience.", "color": "yellow"}
