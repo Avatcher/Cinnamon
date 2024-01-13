@@ -129,7 +129,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        log.info("Provided resourcepack of size " + this.resourcePack.length / 1024.0 + "kB to transmitting server");
+        log.info("Provided resourcepack of size " + this.getSizeString(this.resourcePack.length) + " to transmitting server");
         log.info("Resourcepack URL: " + this.url);
         log.info("Resourcepack SHA1: " + this.getResourcepackSHA1String());
     }
@@ -182,5 +182,15 @@ public class ResourcepackServer implements HttpHandler, Listener {
             formatter.format("%02x", b);
         }
         return formatter.toString();
+    }
+
+    private String getSizeString(double size) {
+        final String[] sizes = { "B", "KB", "MB" };
+        int order = 0;
+        while (size >= 1024.0 && order < sizes.length - 1) {
+            order++;
+            size = size / 1024.0;
+        }
+        return "%.2f%s".formatted(size, sizes[order]);
     }
 }
