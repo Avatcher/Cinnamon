@@ -16,10 +16,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +41,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
     private final ExecutorService executor;
     private final HttpServer server;
     @Getter
-    private final String downloadURL;
+    private final URL url;
 
     @Getter
     private boolean active;
@@ -54,21 +56,21 @@ public class ResourcepackServer implements HttpHandler, Listener {
     /**
      * Creates a {@link ResourcepackServer}.
      *
-     * @param port Port of the http server
-     * @param context Subfolder to download resourcepack
+     * @param port The port of the http server
+     * @param url URL link to download the resourcepack
      * @param message Message for when player is suggested to install resourcepack
      */
-    public ResourcepackServer(int port, String context, Component message) throws IOException {
+    public ResourcepackServer(int port, @Nullable URL url, Component message) throws IOException {
         this.log = Cinnamon.getInstance().getLogger();
 
+        this.url = url == null
+                ? new URL("http://localhost:%s".formatted(port))
+                : url;
         this.executor = Executors.newFixedThreadPool(3);
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         this.server.setExecutor(this.executor);
-        this.server.createContext(context, this);
-        this.downloadURL = "http://%s:%d%s".formatted(
-                InetAddress.getLocalHost().getHostAddress(),
-                port,
-                context);
+        this.server.createContext("/", this);
+
         this.setResourcePack(resourcePack);
         this.message = message;
     }
@@ -103,7 +105,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (this.active) {
-            player.setResourcePack(this.downloadURL, this.resourcePackSHA1, this.message, true);
+            player.setResourcePack(this.url.toString(), this.resourcePackSHA1, this.message, true);
             return;
         }
         if (player.isOp()) {
@@ -127,8 +129,8 @@ public class ResourcepackServer implements HttpHandler, Listener {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        log.info("Provided resourcepack of size " + this.resourcePack.length / 1024.0 + "kB to transmitting server");
-        log.info("Resourcepack URL: " + this.downloadURL);
+        log.info("Provided resourcepack of size " + this.getSizeString(this.resourcePack.length) + " to transmitting server");
+        log.info("Resourcepack URL: " + this.url);
         log.info("Resourcepack SHA1: " + this.getResourcepackSHA1String());
     }
 
@@ -180,5 +182,15 @@ public class ResourcepackServer implements HttpHandler, Listener {
             formatter.format("%02x", b);
         }
         return formatter.toString();
+    }
+
+    private String getSizeString(double size) {
+        final String[] sizes = { "B", "KB", "MB" };
+        int order = 0;
+        while (size >= 1024.0 && order < sizes.length - 1) {
+            order++;
+            size = size / 1024.0;
+        }
+        return "%.2f%s".formatted(size, sizes[order]);
     }
 }

@@ -1,5 +1,6 @@
 package dev.avatcher.cinnamon;
 
+import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.commands.CGiveCommand;
 import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.item.listeners.ItemEventListener;
@@ -24,9 +25,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 /**
@@ -140,17 +141,21 @@ public final class Cinnamon extends JavaPlugin {
         boolean active = true;
         try {
             var config = Cinnamon.getInstance().getConfig().getConfigurationSection("resourcepack");
-            Objects.requireNonNull(config);
+            Preconditions.checkNotNull(config);
+
             active = config.getBoolean("do-transmit");
-            int port = config.getInt("port");
-            String context = config.getString("context");
-            if (context == null) context = "resourcepack";
+            int port = config.contains("port")
+                    ? config.getInt("port")
+                    : 9300;
+            URL url = config.contains("url")
+                    ? new URL(config.getString("url"))
+                    : null;
             String messageJson = config.getString("message");
             Component message = messageJson == null
                     ? Component.text("Please install our resourcepack. It is required for a better server experience.")
                     .color(NamedTextColor.YELLOW)
                     : JSONComponentSerializer.json().deserialize(messageJson);
-            this.resourcepackServer = new ResourcepackServer(port, context, message);
+            this.resourcepackServer = new ResourcepackServer(port, url, message);
             this.registerEvents(this.resourcepackServer);
         } catch (IOException e) {
             throw new RuntimeException(e);
