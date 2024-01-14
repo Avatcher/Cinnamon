@@ -10,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.lang.reflect.Constructor;
@@ -29,9 +30,18 @@ public class CItem {
 
     /**
      * {@link NamespacedKey} for accessing custom item identifier
-     * inside of {@link ItemStack}'s {@link org.bukkit.persistence.PersistentDataContainer}
+     * inside of {@link ItemStack}'s {@link PersistentDataContainer}
      */
     public static final NamespacedKey IDENTIFIER_KEY = new NamespacedKey(Cinnamon.getInstance(), "identifier");
+
+    /**
+     * {@link NamespacedKey} for {@link PersistentDataContainer} marking an {@link ItemStack} as a result
+     * of some custom recipe. It is needed only for identification of Cinnamon recipes and is removed
+     * when the item is crafted.
+     * 
+     * @see #markCustomRecipeResult(ItemStack)
+     */
+    public static final NamespacedKey RECIPE_MARK_KEY = new NamespacedKey(Cinnamon.getInstance(), "reciperesult");
 
     /**
      * Identifier of the custom item, that follow default minecraft
@@ -144,6 +154,26 @@ public class CItem {
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new CItemException(e);
         }
+    }
+
+    /**
+     * Marks item as a result of Cinnamon recipe.
+     *
+     * @param itemStack Item stack to be marked
+     * @return Marked item stack
+     *
+     * @see #RECIPE_MARK_KEY
+     */
+    public static ItemStack markCustomRecipeResult(ItemStack itemStack) {
+        itemStack.editMeta(meta -> {
+            PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
+            if (!persistentDataContainer.has(CItem.IDENTIFIER_KEY)) {
+                persistentDataContainer.set(CItem.IDENTIFIER_KEY,
+                        PersistentDataType.STRING, itemStack.getType().getKey().toString());
+            }
+            persistentDataContainer.set(RECIPE_MARK_KEY, PersistentDataType.BOOLEAN, true);
+        });
+        return itemStack;
     }
 
     /**

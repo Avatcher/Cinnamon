@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.json.recipes;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
+import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import lombok.AllArgsConstructor;
@@ -49,7 +50,7 @@ public class ShapedRecipeDeserializer implements JsonDeserializer<ShapedRecipe> 
                 ? CraftingBookCategory.valueOf(jObject.get("category").getAsString())
                 : CraftingBookCategory.MISC;
 
-        ShapedRecipe recipe = new ShapedRecipe(recipeIdentifier, result);
+        ShapedRecipe recipe = new ShapedRecipe(recipeIdentifier, CItem.markCustomRecipeResult(result));
         recipe.shape(shape);
         ingredients.forEach(recipe::setIngredient);
         recipe.setCategory(category);

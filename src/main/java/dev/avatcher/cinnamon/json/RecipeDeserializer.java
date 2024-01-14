@@ -3,7 +3,6 @@ package dev.avatcher.cinnamon.json;
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
 import dev.avatcher.cinnamon.Cinnamon;
-import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.recipes.ShapedRecipeDeserializer;
 import dev.avatcher.cinnamon.json.recipes.ShapelessRecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
@@ -69,11 +68,6 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
             log.warning("Unknown recipe type '" + recipeType + "' in recipe " + recipeIdentifier);
             return null;
         }
-        Recipe recipe = this.deserializers.get(recipeType).deserialize(jsonElement, type, jsonDeserializationContext);
-        if (!CItem.isCustom(recipe.getResult())) {
-            log.warning("Vanilla item being a result of Cinnamon recipe is not allowed: " + recipeIdentifier);
-            return null;
-        }
-        return recipe;
+        return this.deserializers.get(recipeType).deserialize(jsonElement, type, jsonDeserializationContext);
     }
 }

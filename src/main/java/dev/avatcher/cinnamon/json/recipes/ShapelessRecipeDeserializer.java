@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.json.recipes;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
+import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import org.bukkit.NamespacedKey;
@@ -38,7 +39,7 @@ public class ShapelessRecipeDeserializer implements JsonDeserializer<ShapelessRe
                 .toList();
         ItemStack result = context.deserialize(jObject.get("result").getAsJsonObject(), ItemStack.class);
 
-        ShapelessRecipe recipe = new ShapelessRecipe(recipeIdentifier, result);
+        ShapelessRecipe recipe = new ShapelessRecipe(recipeIdentifier, CItem.markCustomRecipeResult(result));
         ingredients.forEach(recipe::addIngredient);
 
         return recipe;
