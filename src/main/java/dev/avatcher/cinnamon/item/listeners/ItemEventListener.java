@@ -1,16 +1,22 @@
 package dev.avatcher.cinnamon.item.listeners;
 
+import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.item.CItemBehaviour;
 import dev.avatcher.cinnamon.item.events.CItemRightClickEvent;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * Listener of item-related events
@@ -22,13 +28,29 @@ public class ItemEventListener implements Listener {
      *
      * @param event Event
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBeforeCraft(PrepareItemCraftEvent event) {
-        CraftingInventory inventory = event.getInventory();
         if (event.getRecipe() == null) return;
-        for (ItemStack itemStack : inventory.getStorageContents()) {
-            if (CItem.isCustom(itemStack) && !CItem.isCustom(event.getRecipe().getResult())) {
-                inventory.setResult(null);
+        ItemStack resultStack = event.getRecipe().getResult();
+        PersistentDataContainer persistentDataContainer = resultStack.getItemMeta().getPersistentDataContainer();
+        if (persistentDataContainer.has(CItem.RECIPE_MARK_KEY)) {
+            NamespacedKey identifier = NamespacedKey.fromString(
+                    Objects.requireNonNull(persistentDataContainer.get(CItem.IDENTIFIER_KEY, PersistentDataType.STRING)));
+            Preconditions.checkNotNull(identifier);
+
+            resultStack.editMeta(meta -> {
+               PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+               if (identifier.equals(resultStack.getType().getKey())) {
+                   dataContainer.remove(CItem.IDENTIFIER_KEY);
+               }
+               dataContainer.remove(CItem.RECIPE_MARK_KEY);
+            });
+            event.getInventory().setResult(resultStack);
+            return;
+        }
+        for (ItemStack itemStack : event.getInventory().getStorageContents()) {
+            if (CItem.isCustom(itemStack)) {
+                event.getInventory().setResult(null);
                 return;
             }
         }
