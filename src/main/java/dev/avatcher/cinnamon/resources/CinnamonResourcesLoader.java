@@ -3,7 +3,9 @@ package dev.avatcher.cinnamon.resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.avatcher.cinnamon.Cinnamon;
+import dev.avatcher.cinnamon.block.CBlock;
 import dev.avatcher.cinnamon.item.CItem;
+import dev.avatcher.cinnamon.json.CBlockDeserializer;
 import dev.avatcher.cinnamon.json.CItemDeserializer;
 import dev.avatcher.cinnamon.json.ItemStackDeserializer;
 import dev.avatcher.cinnamon.json.RecipeDeserializer;
@@ -99,6 +101,29 @@ public class CinnamonResourcesLoader implements AutoCloseable {
         } catch (Exception e) {
             throw new CinnamonResourcesLoadException(this.resources,
                     String.format("Failed to load an item from resource '%s'", this.resources), e);
+        }
+    }
+
+    public List<CBlock.RegistrationRequest> loadBlocks() throws CinnamonResourcesLoadException {
+        Path blocksFolder = this.resources.getBlocksFolder();
+        if (!Files.exists(blocksFolder)) return List.of();
+        try (var walker = Files.walk(blocksFolder)) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(CBlock.RegistrationRequest.class,
+                            new CBlockDeserializer(this.getResources().getPlugin()))
+                    .create();
+            return walker.filter(Files::isRegularFile)
+                    .map(file -> {
+                        try (var in = new InputStreamReader(Files.newInputStream(file))) {
+                            return gson.fromJson(in, CBlock.RegistrationRequest.class);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new CinnamonResourcesLoadException(this.resources,
+                    String.format("Failed to load a block from resource '%s'", this.resources), e);
         }
     }
 
