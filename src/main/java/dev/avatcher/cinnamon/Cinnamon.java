@@ -1,6 +1,7 @@
 package dev.avatcher.cinnamon;
 
 import com.google.common.base.Preconditions;
+import dev.avatcher.cinnamon.block.listeners.NoteblockListener;
 import dev.avatcher.cinnamon.commands.CGiveCommand;
 import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.item.listeners.ItemEventListener;
@@ -96,7 +97,8 @@ public final class Cinnamon extends JavaPlugin {
             throw new CinnamonRuntimeException(e);
         }
         this.registerEvents(
-                new ItemEventListener()
+                new ItemEventListener(),
+                new NoteblockListener()
         );
         this.registerCommands(
                 new CGiveCommand().getCommandAPICommand()
