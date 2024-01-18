@@ -100,6 +100,8 @@ public class CinnamonResourcesManager implements Closeable {
      */
     @Getter
     private final Map<NamespacedKey, CBlock> customBlockMap;
+    @Getter
+    private final Map<NamespacedKey, NoteblockTune> noteblockTuneMap;
     /**
      * Map of registered custom recipes
      */
@@ -114,6 +116,7 @@ public class CinnamonResourcesManager implements Closeable {
         this.customItemMap = new HashMap<>();
         this.customBlockMap = new HashMap<>();
         this.customBlockMap.put(CBlock.NOTEBLOCK.getIdentifier(), CBlock.NOTEBLOCK);
+        this.noteblockTuneMap = new HashMap<>();
         this.customRecipeMap = new HashMap<>();
         this.preload();
     }
@@ -168,6 +171,7 @@ public class CinnamonResourcesManager implements Closeable {
 
     public void registerCBlock(CBlock cBlock) {
         this.customBlockMap.put(cBlock.getIdentifier(), cBlock);
+        this.noteblockTuneMap.put(cBlock.getIdentifier(), cBlock.getTune());
         log.info("Registered block " + cBlock.getIdentifier());
     }
 
@@ -339,7 +343,7 @@ public class CinnamonResourcesManager implements Closeable {
         List<CBlock.RegistrationRequest> registrationRequests = loader.loadBlocks();
         for (var request : registrationRequests) {
             if (this.customBlockMap.containsKey(request.getIdentifier())) continue;
-            NoteblockTune noteblockTune = this.getFreeNoteblockTune(request.getIdentifier());
+            NoteblockTune noteblockTune = this.findFreeNoteblockTune(request.getIdentifier());
             CBlock cBlock = new CBlock(request.getIdentifier(), request.getModel(), noteblockTune);
             this.registerCBlock(cBlock);
         }
@@ -347,25 +351,24 @@ public class CinnamonResourcesManager implements Closeable {
                 + loader.getResources().getPlugin().getName() + "'");
     }
 
-    private NoteblockTune getFreeNoteblockTune(NamespacedKey identifier) {
-        byte lastNote = this.customBlockMap.values().stream()
-                .map(CBlock::getTune)
+    private NoteblockTune findFreeNoteblockTune(NamespacedKey identifier) {
+        if (this.noteblockTuneMap.containsKey(identifier)) {
+            return this.noteblockTuneMap.get(identifier);
+        }
+        byte note = this.noteblockTuneMap.values().stream()
                 .map(NoteblockTune::note)
                 .max(Byte::compareTo)
                 .orElse((byte) 0);
-        byte lastInstrument = this.customBlockMap.values().stream()
-                .map(CBlock::getTune)
+        byte instrument = this.noteblockTuneMap.values().stream()
                 .map(NoteblockTune::instrument)
                 .max(Byte::compareTo)
                 .orElse((byte) 0);
-        boolean nextInstrument = lastNote + 1 > 24;
-        byte note = nextInstrument
-                ? (byte) 0
-                : ++lastNote;
-        byte instrument = nextInstrument
-                ? ++lastInstrument
-                : lastInstrument;
-
+        if (note + 1 > 24) {
+            note = (byte) 0;
+            instrument = (byte) (instrument + 1);
+        } else {
+            note = (byte) (note + 1);
+        }
         NoteblockTune tune = new NoteblockTune(note, instrument);
         return tune;
     }
@@ -391,13 +394,16 @@ public class CinnamonResourcesManager implements Closeable {
         Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         if (!Files.exists(folder)) return;
 
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(NamespacedKey.class, new NamespacedKeyAdapter())
+                .create();
+
         Path modelsPath = folder.resolve("CustomModelData.json");
         if (Files.exists(modelsPath)) {
             try (var modelsReader = new InputStreamReader(Files.newInputStream(modelsPath))) {
-                Map<String, Integer> itemModels = new Gson().fromJson(modelsReader, new TypeToken<>() {
-                });
+                Map<NamespacedKey, Integer> itemModels = gson.fromJson(modelsReader, new TypeToken<>() {});
                 for (var entry : itemModels.entrySet()) {
-                    var model = new CustomModelData(NamespacedKey.fromString(entry.getKey()), entry.getValue());
+                    var model = new CustomModelData(entry.getKey(), entry.getValue());
                     this.customModelMap.put(model.identifier(), model);
                     log.info("Preloaded item model " + model.identifier());
                 }
@@ -407,18 +413,21 @@ public class CinnamonResourcesManager implements Closeable {
                         .orElse(CustomModelData.START_NUMERIC);
             }
         }
-        Path tunePath = folder.resolve("Blocks.json");
+        Path tunePath = folder.resolve("NoteblockTunes.json");
         if (Files.exists(tunePath)) {
             try (var reader = new InputStreamReader(Files.newInputStream(tunePath))) {
-                Gson gson = new GsonBuilder()
-                        .registerTypeAdapter(NamespacedKey.class, new NamespacedKeyAdapter())
-                        .create();
-                List<CBlock> blocks = gson.fromJson(reader, new TypeToken<>(){});
-                for (var block : blocks) {
-                    this.customBlockMap.put(block.getIdentifier(), block);
-                    log.info("Preloaded block " + block.getIdentifier());
+                Map<NamespacedKey, NoteblockTune> tunes = gson.fromJson(reader, new TypeToken<>(){});
+                int loaded = 0;
+                for (var entry : tunes.entrySet()) {
+                    if (entry.getValue().equals(CBlock.NOTEBLOCK.getTune())) {
+                        log.warning("Cannot override default minecraft:note_block NoteblockTune with %s".formatted(entry.getKey()));
+                        continue;
+                    }
+                    this.noteblockTuneMap.put(entry.getKey(), entry.getValue());
+                    log.info("Preloaded NoteblockTune " + entry.getKey());
+                    loaded++;
                 }
-                log.info("Preloaded a total of " + blocks.size() + " blocks");
+                log.info("Preloaded a total of " + loaded + " NoteblockTune(s)");
             }
         }
     }
@@ -443,9 +452,8 @@ public class CinnamonResourcesManager implements Closeable {
             Files.writeString(modelsPath, gson.toJson(models));
         }
         {
-            Path blocksPath = folder.resolve("Blocks.json");
-            Files.writeString(blocksPath, gson.toJson(this.customBlockMap.values().stream()
-                    .filter(b -> b != CBlock.NOTEBLOCK)));
+            Path tunes = folder.resolve("NoteblockTunes.json");
+            Files.writeString(tunes, gson.toJson(this.noteblockTuneMap));
         }
     }
 }
