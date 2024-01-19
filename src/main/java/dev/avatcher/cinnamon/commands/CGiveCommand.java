@@ -38,7 +38,6 @@ public class CGiveCommand {
      * @param args   Command arguments
      */
     public void executePlayer(Player player, CommandArguments args) {
-        player.sendMessage("CINNAMON COMMAND");
         Player target = (Player) args.get("target");
         if (target == null) {
             player.sendMessage(Component.text("Invalid target").color(NamedTextColor.RED));
