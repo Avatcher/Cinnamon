@@ -8,7 +8,6 @@ import dev.avatcher.cinnamon.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.resources.CinnamonResources;
 import dev.avatcher.cinnamon.resources.CinnamonResourcesManager;
 import dev.avatcher.cinnamon.resources.ResourcepackServer;
-import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesInitializationException;
 import dev.avatcher.cinnamon.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.Map;
@@ -62,9 +62,10 @@ public final class Cinnamon extends JavaPlugin {
     public static void load(Plugin plugin) {
         try {
             Cinnamon.load(new JarCinnamonResources(plugin));
-        } catch (CinnamonResourcesInitializationException e) {
-            throw new CinnamonRuntimeException(e);
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     /**
