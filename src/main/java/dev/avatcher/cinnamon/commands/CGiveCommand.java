@@ -92,7 +92,7 @@ public class CGiveCommand {
                         new PlayerArgument("target"),
                         new NamespacedKeyArgument("item")
                                 .replaceSafeSuggestions(SafeSuggestions.suggest(info ->
-                                        Cinnamon.getInstance().getResourcesManager().getCustomItemMap().keySet()
+                                        Cinnamon.getInstance().getResourcesManager().getCustomItems().getKeys()
                                             .stream()
                                             .toList()
                                                 .toArray(new NamespacedKey[0])

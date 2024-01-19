@@ -1,13 +1,13 @@
 package dev.avatcher.cinnamon.resources.source;
 
 import dev.avatcher.cinnamon.resources.CinnamonResources;
-import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesInitializationException;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -42,25 +42,22 @@ public class JarCinnamonResources implements CinnamonResources {
      */
     private final FileSystem fileSystem;
 
-    public JarCinnamonResources(Plugin plugin, Class<?> resource) throws CinnamonResourcesInitializationException {
+    public JarCinnamonResources(Plugin plugin, Class<?> resource) throws IOException, URISyntaxException {
         this.plugin = plugin;
         this.clazz = resource;
-        try {
-            String jarPath = resource
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
-                    .toURI()
-                    .getPath();
-            URI uri = URI.create("jar:file:" + jarPath);
-            this.fileSystem = FileSystems.newFileSystem(uri, Map.of());
-            this.folder = fileSystem.getPath(CINNAMON_FOLDER);
-        } catch (Throwable e) {
-            throw new CinnamonResourcesInitializationException(this, e);
-        }
+        String jarPath = resource
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI()
+                .getPath();
+        URI uri = URI.create("jar:file:" + jarPath);
+        this.fileSystem = FileSystems.newFileSystem(uri, Map.of());
+        this.folder = fileSystem.getPath(CINNAMON_FOLDER);
+
     }
 
-    public JarCinnamonResources(Plugin plugin) throws CinnamonResourcesInitializationException {
+    public JarCinnamonResources(Plugin plugin) throws IOException, URISyntaxException {
         this(plugin, plugin.getClass());
     }
 

@@ -1,30 +1,23 @@
 package dev.avatcher.cinnamon.resources;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.block.CBlock;
-import dev.avatcher.cinnamon.block.NoteblockTune;
-import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.item.CItem;
-import dev.avatcher.cinnamon.json.NamespacedKeyAdapter;
-import dev.avatcher.cinnamon.resources.config.CinnamonResourcesConfig;
-import dev.avatcher.cinnamon.resources.exceptions.CinnamonResourcesLoadException;
+import dev.avatcher.cinnamon.resources.modules.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -82,49 +75,56 @@ public class CinnamonResourcesManager implements Closeable {
     }
 
     /**
-     * Map of registered CustomModelData
+     * Module of registered CustomModelData
      */
     @Getter
-    private final Map<NamespacedKey, CustomModelData> customModelMap;
+    private final CustomModelDataModule customModelData;
     /**
-     * Last {@link CustomModelData#numeric} assigned in CustomModelData registration
+     * Module of registered custom items
      */
-    private int lastCustomModelNumeric = CustomModelData.START_NUMERIC;
+    @Getter
+    private final CItemModule customItems;
     /**
-     * Map of registered custom items
+     * Module of registered custom blocks
      */
     @Getter
-    private final Map<NamespacedKey, CItem> customItemMap;
+    private final CBlockModule customBlocks;
     /**
-     * Map of registered custom blocks
+     * Module of registered noteblock tunes
      */
     @Getter
-    private final Map<NamespacedKey, CBlock> customBlockMap;
-    @Getter
-    private final Map<NamespacedKey, NoteblockTune> noteblockTuneMap;
+    private final NoteblockTuneModule noteblockTunes;
     /**
      * Map of registered custom recipes
      */
     @Getter
-    private final Map<NamespacedKey, Recipe> customRecipeMap;
+    private final RecipeModule customRecipes;
+
+    private final List<CinnamonModule<?>> modules;
 
     private final Logger log;
 
     public CinnamonResourcesManager() throws IOException {
         this.log = Cinnamon.getInstance().getLogger();
-        this.customModelMap = new HashMap<>();
-        this.customItemMap = new HashMap<>();
-        this.customBlockMap = new HashMap<>();
-        this.customBlockMap.put(CBlock.NOTEBLOCK.getIdentifier(), CBlock.NOTEBLOCK);
-        this.noteblockTuneMap = new HashMap<>();
-        this.customRecipeMap = new HashMap<>();
-        this.preload();
+        this.customModelData = new CustomModelDataModule();
+        this.customItems = new CItemModule(this.customModelData);
+        this.noteblockTunes = new NoteblockTuneModule();
+        this.customBlocks = new CBlockModule(this.noteblockTunes);
+        this.customRecipes = new RecipeModule();
+        this.modules = List.of(
+                this.customModelData,
+                this.customItems,
+                this.noteblockTunes,
+                this.customBlocks,
+                this.customRecipes
+        );
+        this.preloadModules();
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         this.savePreload();
-        customRecipeMap.keySet().forEach(Bukkit::removeRecipe);
+        customRecipes.getKeys().forEach(Bukkit::removeRecipe);
     }
 
     /**
@@ -135,7 +135,7 @@ public class CinnamonResourcesManager implements Closeable {
      * @return Optional {@link CustomModelData} (Empty, if CustomModelData was not found)
      */
     public Optional<CustomModelData> getCustomModelData(NamespacedKey identifier) {
-        return Optional.ofNullable(this.customModelMap.get(identifier));
+        return this.customModelData.get(identifier);
     }
 
     /**
@@ -146,46 +146,9 @@ public class CinnamonResourcesManager implements Closeable {
      * @return Optional {@link CItem} (Empty, if item was not found)
      */
     public Optional<CItem> getCItem(NamespacedKey identifier) {
-        return Optional.ofNullable(this.customItemMap.get(identifier));
+        return this.customItems.get(identifier);
     }
 
-    /**
-     * Registers {@link CustomModelData}
-     *
-     * @param customModelData CustomModelData to be registered
-     */
-    public void registerCustomModel(CustomModelData customModelData) {
-        this.customModelMap.put(customModelData.identifier(), customModelData);
-        log.info("Registered item model " + customModelData.identifier());
-    }
-
-    /**
-     * Registers {@link CItem}
-     *
-     * @param cItem CItem to be registered
-     */
-    public void registerCItem(CItem cItem) {
-        this.customItemMap.put(cItem.getIdentifier(), cItem);
-        log.info("Registered item " + cItem.getIdentifier());
-    }
-
-    public void registerCBlock(CBlock cBlock) {
-        this.customBlockMap.put(cBlock.getIdentifier(), cBlock);
-        this.noteblockTuneMap.put(cBlock.getIdentifier(), cBlock.getTune());
-        log.info("Registered block " + cBlock.getIdentifier());
-    }
-
-    /**
-     * Registers {@link Recipe}
-     *
-     * @param identifier Identifier of the recipe
-     * @param recipe Recipe
-     */
-    public void registerRecipe(NamespacedKey identifier, Recipe recipe) {
-        this.customRecipeMap.put(identifier, recipe);
-        Bukkit.addRecipe(recipe, true);
-        log.info("Registered recipe " + identifier);
-    }
 
     /**
      * Loads certain Cinnamon resources.
@@ -193,48 +156,42 @@ public class CinnamonResourcesManager implements Closeable {
      * @param resources Resources to be loaded
      */
     public void load(CinnamonResources resources) {
-        try (var loader = new CinnamonResourcesLoader(resources)) {
-            CinnamonResourcesConfig config = loader.loadConfig();
-            loader.setConfig(config);
-
-            this.loadItemModels(loader);
-            this.loadItems(loader);
-            this.loadRecipes(loader);
-            this.loadBlocks(loader);
-            this.loadAssets(loader);
-
-            this.savePreload();
-        } catch (CinnamonResourcesLoadException e) {
-            log.severe(e.getMessage());
-            log.log(Level.SEVERE, e.getCause().getMessage(), e.getCause());
-            log.severe("Failed to load resources '" + resources + "' for plugin '"
-                    + resources.getPlugin().getName() + "'");
+        this.modules.forEach(module -> {
+            try {
+                module.load(resources);
+            } catch (IOException e) {
+                log.severe("[%s] An error occurred while loading %s from plugin '%s'"
+                        .formatted(module.getClass().getSimpleName(), resources,
+                                resources.getPlugin().getName()));
+                log.log(Level.SEVERE, e.getMessage(), e);
+            }
+        });
+        try {
+            this.loadAssets(resources);
         } catch (IOException e) {
-            throw new CinnamonRuntimeException(e);
+            log.severe("An error occurred while loading assets %s from plugin '%s'"
+                    .formatted(resources, resources.getPlugin().getName()));
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
+        this.savePreload();
     }
 
     /**
      * Loads assets and adds them into Cinnamon's resource pack.
      * Resource pack is created under Cinnamon's plugin folder {@value RESOURCE_PACK_FOLDER}.
      *
-     * @param loader Loader of Cinnamon resources
+     * @param resources Cinnamon resources
      */
-    private void loadAssets(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
-        if (!Files.exists(loader.getResources().getAssetsFolder())) return;
+    private void loadAssets(@NotNull CinnamonResources resources) throws IOException {
+        if (!Files.exists(resources.getAssetsFolder())) return;
         Path resourcePack = Cinnamon.getInstance().getDataFolder().toPath().resolve(RESOURCE_PACK_FOLDER);
         Path resourcePackAssets = resourcePack.resolve(CinnamonResources.ASSETS_FOLDER);
-        try {
-            Files.createDirectories(resourcePackAssets);
-            Path assets = loader.getResources().getAssetsFolder();
-            this.copyAssets(assets, resourcePackAssets);
-            this.generateItemModelOverrides(resourcePackAssets);
-            this.generateBlockModelOverrides(resourcePackAssets);
-            this.addPackMeta(resourcePack);
-        } catch (IOException e) {
-            throw new CinnamonResourcesLoadException(loader.getResources(), "Failed to load assets from resource "
-                    + loader.getResources(), e);
-        }
+        Files.createDirectories(resourcePackAssets);
+        Path assets = resources.getAssetsFolder();
+        this.copyAssets(assets, resourcePackAssets);
+        this.generateItemModelOverrides(resourcePackAssets);
+        this.generateBlockModelOverrides(resourcePackAssets);
+        this.addPackMeta(resourcePack);
     }
 
     /**
@@ -270,7 +227,7 @@ public class CinnamonResourcesManager implements Closeable {
                 .resolve(String.valueOf(CItem.MATERIAL).toLowerCase() + ".json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
-        String modelOverridesValues = this.customModelMap.values().stream()
+        String modelOverridesValues = this.customModelData.getValues().stream()
                 .sorted(Comparator.comparingInt(CustomModelData::numeric))
                 .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %d }, \"model\": \"%s\" }"
                         .formatted(model.numeric(), model.identifier()))
@@ -281,11 +238,17 @@ public class CinnamonResourcesManager implements Closeable {
         Files.write(modelOverridesPath, modelOverrides.getBytes());
     }
 
+    /**
+     * Generates .json noteblock model file, that defines different
+     * block models depending on its {@link dev.avatcher.cinnamon.block.NoteblockTune}.
+     *
+     * @param resourcePackAssets Resource pack assets folder
+     */
     private void generateBlockModelOverrides(Path resourcePackAssets) throws IOException {
         Path modelOverridesPath = resourcePackAssets.resolve("minecraft/blockstates/note_block.json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
-        String modelOverridesValues = this.customBlockMap.values()
+        String modelOverridesValues = this.customBlocks.getValues()
                 .stream()
                 .filter(b -> b != CBlock.NOTEBLOCK)
                 .map(block -> "\t\t\"note=%d,instrument=%s\": { \"model\": \"%s\" }"
@@ -311,149 +274,51 @@ public class CinnamonResourcesManager implements Closeable {
     }
 
     /**
-     * Loads CustomModelData from {@link CinnamonResourcesLoader}
-     *
-     * @param loader Loader of Cinnamon resources
-     */
-    private void loadItemModels(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
-        List<CustomModelData> models = loader.loadCustomModelIdentifiers().stream()
-                .filter(modelName -> !this.customModelMap.containsKey(modelName))
-                .map(modelName -> new CustomModelData(modelName, ++this.lastCustomModelNumeric))
-                .toList();
-        models.forEach(this::registerCustomModel);
-        if (!models.isEmpty()) {
-            log.info("Loaded a total of " + models.size() + " new item models for plugin '"
-                    + loader.getResources().getPlugin().getName() + "'");
-        }
-    }
-
-    /**
-     * Loads custom items from {@link CinnamonResourcesLoader}
-     *
-     * @param loader Loader of Cinnamon resources
-     */
-    private void loadItems(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
-        List<CItem> items = loader.loadItems();
-        items.forEach(this::registerCItem);
-        log.info("Loaded a total of " + items.size() + " items for plugin '"
-                + loader.getResources().getPlugin().getName() + "'");
-    }
-
-    private void loadBlocks(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
-        List<CBlock.RegistrationRequest> registrationRequests = loader.loadBlocks();
-        for (var request : registrationRequests) {
-            if (this.customBlockMap.containsKey(request.getIdentifier())) continue;
-            NoteblockTune noteblockTune = this.findFreeNoteblockTune(request.getIdentifier());
-            CBlock cBlock = new CBlock(request.getIdentifier(), request.getModel(), noteblockTune);
-            this.registerCBlock(cBlock);
-        }
-        log.info("Loaded a total of " + registrationRequests.size() + " blocks for plugin '"
-                + loader.getResources().getPlugin().getName() + "'");
-    }
-
-    private NoteblockTune findFreeNoteblockTune(NamespacedKey identifier) {
-        if (this.noteblockTuneMap.containsKey(identifier)) {
-            return this.noteblockTuneMap.get(identifier);
-        }
-        byte note = this.noteblockTuneMap.values().stream()
-                .map(NoteblockTune::note)
-                .max(Byte::compareTo)
-                .orElse((byte) 0);
-        byte instrument = this.noteblockTuneMap.values().stream()
-                .map(NoteblockTune::instrument)
-                .max(Byte::compareTo)
-                .orElse((byte) 0);
-        if (note + 1 > 24) {
-            note = (byte) 0;
-            instrument = (byte) (instrument + 1);
-        } else {
-            note = (byte) (note + 1);
-        }
-        NoteblockTune tune = new NoteblockTune(note, instrument);
-        return tune;
-    }
-
-    /**
-     * Loads recipes from {@link CinnamonResourcesLoader}
-     *
-     * @param loader Loader of Cinnamon resources
-     */
-    private void loadRecipes(@NotNull CinnamonResourcesLoader loader) throws CinnamonResourcesLoadException {
-        List<Map.Entry<NamespacedKey, Recipe>> recipes = loader.loadRecipes();
-        recipes.forEach(recipe -> this.registerRecipe(recipe.getKey(), recipe.getValue()));
-        log.info("Loaded a total of " + recipes.size() + " recipes for plugin '"
-                + loader.getResources().getPlugin().getName() + "'");
-    }
-
-    /**
      * Preloads some data from Cinnamon's {@value #PRELOAD_FOLDER} data folder.
      * This is a very important method, as it loads some previously registered
      * resources in Cinnamon.
      */
-    private void preload() throws IOException {
+    private void preloadModules() {
         Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         if (!Files.exists(folder)) return;
-
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(NamespacedKey.class, new NamespacedKeyAdapter())
-                .create();
-
-        Path modelsPath = folder.resolve("CustomModelData.json");
-        if (Files.exists(modelsPath)) {
-            try (var modelsReader = new InputStreamReader(Files.newInputStream(modelsPath))) {
-                Map<NamespacedKey, Integer> itemModels = gson.fromJson(modelsReader, new TypeToken<>() {});
-                for (var entry : itemModels.entrySet()) {
-                    var model = new CustomModelData(entry.getKey(), entry.getValue());
-                    this.customModelMap.put(model.identifier(), model);
-                    log.info("Preloaded item model " + model.identifier());
+        this.modules.forEach(module -> {
+            if (module instanceof Preloadable preloadable) {
+                try {
+                    preloadable.preload(folder);
+                } catch (IOException e) {
+                    log.severe("[%s] An error occurred while preloading"
+                            .formatted(module.getClass().getSimpleName()));
+                    log.log(Level.SEVERE, e.getMessage(), e);
                 }
-                log.info("Preloaded a total of " + itemModels.size() + " item models");
-                this.lastCustomModelNumeric = itemModels.values().stream()
-                        .max(Integer::compareTo)
-                        .orElse(CustomModelData.START_NUMERIC);
             }
-        }
-        Path tunePath = folder.resolve("NoteblockTunes.json");
-        if (Files.exists(tunePath)) {
-            try (var reader = new InputStreamReader(Files.newInputStream(tunePath))) {
-                Map<NamespacedKey, NoteblockTune> tunes = gson.fromJson(reader, new TypeToken<>(){});
-                int loaded = 0;
-                for (var entry : tunes.entrySet()) {
-                    if (entry.getValue().equals(CBlock.NOTEBLOCK.getTune())) {
-                        log.warning("Cannot override default minecraft:note_block NoteblockTune with %s".formatted(entry.getKey()));
-                        continue;
-                    }
-                    this.noteblockTuneMap.put(entry.getKey(), entry.getValue());
-                    log.info("Preloaded NoteblockTune " + entry.getKey());
-                    loaded++;
-                }
-                log.info("Preloaded a total of " + loaded + " NoteblockTune(s)");
-            }
-        }
+        });
     }
 
     /**
      * Saves some important registered resources into
      * Cinnamon's {@value #PRELOAD_FOLDER} data folder.
      */
-    private void savePreload() throws IOException {
+    private void savePreload() {
+        log.info("Saving preload...");
         Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
-        Files.createDirectories(folder);
-
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(NamespacedKey.class, new NamespacedKeyAdapter())
-                .setPrettyPrinting()
-                .create();
-        {
-            Path modelsPath = folder.resolve("CustomModelData.json");
-            Map<String, Integer> models = this.customModelMap.values().stream()
-                    .map(model -> Map.entry(model.identifier().asString(), model.numeric()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            Files.writeString(modelsPath, gson.toJson(models));
+        try {
+            Files.createDirectories(folder);
+        } catch (IOException e) {
+            log.severe("[%s] Failed to create preload folder".formatted(this.getClass().getSimpleName()));
+            log.log(Level.SEVERE, e.getMessage(), e);
+            return;
         }
-        {
-            Path tunes = folder.resolve("NoteblockTunes.json");
-            Files.writeString(tunes, gson.toJson(this.noteblockTuneMap));
-        }
+        this.modules.forEach(module -> {
+            if (module instanceof Preloadable preloadable) {
+                try {
+                    preloadable.savePreload(folder);
+                } catch (IOException e) {
+                    log.severe("[%s] An error occurred while saving preload"
+                            .formatted(module.getClass().getSimpleName()));
+                    log.log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+        });
+        log.info("Preload saved");
     }
 }
