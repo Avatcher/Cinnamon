@@ -3,6 +3,8 @@ package dev.avatcher.cinnamon;
 import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.block.listeners.NoteblockListener;
 import dev.avatcher.cinnamon.commands.CGiveCommand;
+import dev.avatcher.cinnamon.commands.CommandBase;
+import dev.avatcher.cinnamon.commands.InspectCommand;
 import dev.avatcher.cinnamon.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.resources.CinnamonResources;
@@ -11,7 +13,6 @@ import dev.avatcher.cinnamon.resources.ResourcepackServer;
 import dev.avatcher.cinnamon.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
-import dev.jorel.commandapi.CommandAPICommand;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -102,7 +103,8 @@ public final class Cinnamon extends JavaPlugin {
                 new NoteblockListener()
         );
         this.registerCommands(
-                new CGiveCommand().getCommandAPICommand()
+                new CGiveCommand(),
+                new InspectCommand()
         );
         // Runs code AFTER all the plugins are loaded
         this.getServer().getScheduler().scheduleSyncDelayedTask(this, this::initializeResourcepackServer);
@@ -129,9 +131,9 @@ public final class Cinnamon extends JavaPlugin {
      *
      * @param commands CommandAPI commands
      */
-    private void registerCommands(CommandAPICommand... commands) {
+    private void registerCommands(CommandBase... commands) {
         for (var command : commands) {
-            command.register();
+            command.getCommandApiCommand().register();
         }
     }
 

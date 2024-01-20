@@ -26,7 +26,7 @@ import java.util.Optional;
  *
  * @see CItem
  */
-public class CGiveCommand {
+public class CGiveCommand implements CommandBase {
     /**
      * Command's in-game name
      */
@@ -92,13 +92,12 @@ public class CGiveCommand {
         }
     }
 
-    /**
-     * Constructs a {@link dev.jorel.commandapi.CommandAPICommand} instance
-     * for this command.
-     *
-     * @return A {@link CommandAPICommand} instance
-     */
-    public CommandAPICommand getCommandAPICommand() {
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public CommandAPICommand getCommandApiCommand() {
         return new CommandAPICommand(NAME)
                 .withShortDescription("Gives a custom item")
                 .withPermission(CommandPermission.OP)
