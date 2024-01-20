@@ -8,6 +8,7 @@ import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.resources.CustomModelData;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.Plugin;
 
@@ -44,6 +45,15 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
                     log.warning("Couldn't find model '" + modelKey + "' for item " + identifier);
                     return new CustomModelData(CItem.MATERIAL.getKey(), 0);
                 });
+        Material material = CItem.MATERIAL;
+        if (jObject.has("material")) {
+            String materialName = jObject.get("material").getAsString();
+            material = Material.matchMaterial(materialName);
+            if (material == null) {
+                log.warning("Couldn't find item material: " + materialName);
+                material = CItem.MATERIAL;
+            }
+        }
         Component name = (jObject.get("name").isJsonObject()
                 ? Component.translatable(jObject.get("name").getAsJsonObject().get("translation").getAsString())
                 : Component.text(jObject.get("name").getAsString()))
@@ -66,6 +76,7 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
         return new CItem(
                 identifier,
                 model,
+                material,
                 name,
                 behaviourClazz
         );

@@ -4,7 +4,6 @@ import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.item.exceptions.CItemException;
 import dev.avatcher.cinnamon.resources.CustomModelData;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -21,7 +20,6 @@ import java.util.Optional;
 /**
  * Cinnamon custom item
  */
-@AllArgsConstructor
 public class CItem {
     /**
      * Item used as bare material of the most of the custom items
@@ -64,6 +62,9 @@ public class CItem {
     @Getter
     private final CustomModelData model;
 
+    @Getter
+    private final Material material;
+
     /**
      * Item's in-game name
      */
@@ -84,20 +85,12 @@ public class CItem {
 
     private transient Constructor<? extends CItemBehaviour> behaviourConstructor;
 
-    public CItem(NamespacedKey identifier, CustomModelData model, Component name, Class<? extends CItemBehaviour> behaviour) {
+    public CItem(NamespacedKey identifier, CustomModelData model, Material material, Component name, Class<? extends CItemBehaviour> behaviour) {
         this.identifier = identifier;
         this.model = model;
+        this.material = material;
         this.name = name;
         this.setBehaviour(behaviour);
-    }
-
-    public CItem() {
-        this(
-                new NamespacedKey(Cinnamon.getInstance(), "unknown"),
-                new CustomModelData(new NamespacedKey(Cinnamon.getInstance(), "unknown"), 86000),
-                Component.text("Unknown"),
-                DefaultItemBehaviour.class
-        );
     }
 
     @Override
@@ -114,7 +107,7 @@ public class CItem {
      * @return {@link ItemStack}
      */
     public ItemStack getItemStack() {
-        var item = new ItemStack(MATERIAL);
+        var item = new ItemStack(this.material);
         item.editMeta(meta -> {
             meta.displayName(this.name);
             meta.setCustomModelData(model.numeric());
