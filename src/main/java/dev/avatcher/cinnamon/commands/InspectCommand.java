@@ -1,6 +1,7 @@
 package dev.avatcher.cinnamon.commands;
 
 import dev.avatcher.cinnamon.Cinnamon;
+import dev.avatcher.cinnamon.block.CBlock;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.resources.CustomModelData;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -9,7 +10,10 @@ import dev.jorel.commandapi.executors.CommandArguments;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -53,7 +57,7 @@ public class InspectCommand implements CommandBase {
 
         if (!CItem.isCustom(itemStack)) {
             player.sendMessage(
-                    message.append(Component.text("└ Regular item").color(NamedTextColor.GRAY)));
+                    message.append(Component.text("└ Regular item")));
             return;
         }
         Optional<CItem> cItemOptional = CItem.of(itemStack);
@@ -107,6 +111,45 @@ public class InspectCommand implements CommandBase {
     }
 
     private void inspectBlock(Player player, CommandArguments args) {
-        player.sendMessage(Component.text("Not implemented"));
+        Block block = player.getTargetBlockExact(5);
+        if (block == null) {
+            player.sendMessage(Component.text("No block is selected.").color(NamedTextColor.RED));
+            return;
+        }
+        MiniMessage miniMessage = MiniMessage.miniMessage();
+        Location blockLocation = block.getLocation().toBlockLocation();
+        Component message = Component.empty()
+                .color(NamedTextColor.GRAY)
+                .append(miniMessage.deserialize("<white>[%.0f %.0f %.0f]</white>"
+                        .formatted(blockLocation.x(), blockLocation.y(), blockLocation.z())))
+                .append(Component.newline());
+        if (block.getType() != Material.NOTE_BLOCK) {
+            message = message.append(miniMessage.deserialize(" └ <white>Regular block</white>"));
+            player.sendMessage(message);
+            return;
+        }
+        Optional<CBlock> cBlockOptional = CBlock.of(block);
+        NoteBlock noteBlock = (NoteBlock) block.getBlockData();
+        String messageString;
+        if (cBlockOptional.isPresent()) {
+            messageString = """
+                ├ Id: <white>%s</white>
+                └ Noteblock Tone:
+                  ├ Note: <white>%s</white>
+                  └ Instrument: <white>%s</white>
+                """.formatted(cBlockOptional.get().getIdentifier(),
+                    noteBlock.getNote().getId(),
+                    noteBlock.getInstrument().getType());
+        } else {
+            messageString = """
+                ├ Id: <red>Unknown block</red>
+                └ Noteblock Tone:
+                  ├ Note: <red>%s</red>
+                  └ Instrument: <red>%s</red>
+                """.formatted(noteBlock.getNote().getId(),
+                    noteBlock.getInstrument().getType());
+        }
+        message = message.append(miniMessage.deserialize(messageString));
+        player.sendMessage(message);
     }
 }
