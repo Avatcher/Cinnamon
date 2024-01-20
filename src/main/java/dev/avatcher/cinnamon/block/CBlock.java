@@ -1,5 +1,6 @@
 package dev.avatcher.cinnamon.block;
 
+import dev.avatcher.cinnamon.Cinnamon;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -54,8 +55,14 @@ public class CBlock {
 
     public static Optional<CBlock> of(Block block) {
         if (!isCustom(block)) return Optional.empty();
-        // TODO: Store custom blocks in Resources manager
-        return Optional.empty();
+        NoteBlock blockData = (NoteBlock) block.getBlockData();
+        NoteblockTune blockTune = new NoteblockTune(blockData.getNote().getId(), blockData.getInstrument().getType());
+        return Cinnamon.getInstance().getResourcesManager()
+                .getCustomBlocks()
+                .getValues()
+                .stream()
+                .filter(cBlock -> cBlock.getTune().equals(blockTune))
+                .findAny();
     }
 
     @Builder
