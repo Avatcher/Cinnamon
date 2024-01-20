@@ -6,6 +6,7 @@ import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.resources.modules.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -189,7 +191,12 @@ public class CinnamonResourcesManager implements Closeable {
         Files.createDirectories(resourcePackAssets);
         Path assets = resources.getAssetsFolder();
         this.copyAssets(assets, resourcePackAssets);
-        this.generateItemModelOverrides(resourcePackAssets);
+        Set<Material> uniqueMaterials = this.customItems.getValues().stream()
+                .map(CItem::getMaterial)
+                .collect(Collectors.toSet());
+        for (var material : uniqueMaterials) {
+            this.generateItemModelOverrides(resourcePackAssets, material);
+        }
         this.generateBlockModelOverrides(resourcePackAssets);
         this.addPackMeta(resourcePack);
     }
@@ -221,18 +228,18 @@ public class CinnamonResourcesManager implements Closeable {
      *
      * @param resourcePackAssets Resource pack assets folder
      */
-    private void generateItemModelOverrides(Path resourcePackAssets) throws IOException {
+    private void generateItemModelOverrides(Path resourcePackAssets, Material material) throws IOException {
+        NamespacedKey materialKey = material.getKey();
         Path modelOverridesPath = resourcePackAssets
                 .resolve("minecraft/models/item/")
-                .resolve(String.valueOf(CItem.MATERIAL).toLowerCase() + ".json");
+                .resolve(materialKey.getKey() + ".json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
         String modelOverridesValues = this.customModelData.getValues().stream()
                 .sorted(Comparator.comparingInt(CustomModelData::numeric))
-                .map(model -> "\t\t{ \"predicate\": { \"custom_model_data\": %d }, \"model\": \"%s\" }"
+                .map(model -> "    { \"predicate\": { \"custom_model_data\": %d }, \"model\": \"%s\" }"
                         .formatted(model.numeric(), model.identifier()))
                 .collect(Collectors.joining(",\n"));
-        NamespacedKey materialKey = CItem.MATERIAL.getKey();
         String modelOverrides = ITEM_MODEL_OVERRIDE_TEMPLATE
                 .formatted(materialKey.getNamespace() + ":item/" + materialKey.getKey(), modelOverridesValues);
         Files.write(modelOverridesPath, modelOverrides.getBytes());
