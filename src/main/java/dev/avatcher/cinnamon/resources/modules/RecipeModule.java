@@ -7,6 +7,7 @@ import dev.avatcher.cinnamon.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import dev.avatcher.cinnamon.json.value.ValueProvider;
 import dev.avatcher.cinnamon.resources.CinnamonResources;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -29,6 +30,12 @@ public class RecipeModule extends AbstractCinnamonModule<Recipe> {
      */
     public RecipeModule() {
         super(Recipe.class);
+    }
+
+    @Override
+    public void register(NamespacedKey key, Recipe value) {
+        super.register(key, value);
+        Bukkit.addRecipe(value);
     }
 
     @Override
