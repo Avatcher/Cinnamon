@@ -241,7 +241,12 @@ public class CinnamonResourcesManager implements Closeable {
                         .formatted(model.numeric(), model.identifier()))
                 .collect(Collectors.joining(",\n"));
         String modelOverrides = ITEM_MODEL_OVERRIDE_TEMPLATE
-                .formatted(materialKey.getNamespace() + ":item/" + materialKey.getKey(), modelOverridesValues);
+                .formatted(
+                        CustomModelData.HANDHELD_ITEMS.contains(material)
+                                ? "minecraft:item/handheld"
+                                : "minecraft:item/generated",
+                        materialKey.getNamespace() + ":item/" + materialKey.getKey(),
+                        modelOverridesValues);
         Files.write(modelOverridesPath, modelOverrides.getBytes());
     }
 
