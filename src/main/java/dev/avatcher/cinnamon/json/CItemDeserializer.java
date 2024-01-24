@@ -3,7 +3,7 @@ package dev.avatcher.cinnamon.json;
 import com.google.gson.*;
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.CItem;
-import dev.avatcher.cinnamon.item.CItemBehaviour;
+import dev.avatcher.cinnamon.item.ItemBehaviour;
 import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.resources.CustomModelData;
 import net.kyori.adventure.text.Component;
@@ -58,27 +58,29 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
                 ? Component.translatable(jObject.get("name").getAsJsonObject().get("translation").getAsString())
                 : Component.text(jObject.get("name").getAsString()))
                 .decoration(TextDecoration.ITALIC, false);
-        Class<? extends CItemBehaviour> behaviourClazz;
+
+        CItem cItem = CItem.builder()
+                .identifier(identifier)
+                .model(model)
+                .material(material)
+                .name(name)
+                .build();
+        Class<? extends ItemBehaviour> behaviourClazz;
         if (jObject.has("class")) {
             try {
                 Class<?> clazz = Class.forName(jObject.get("class").getAsString());
-                if (!CItemBehaviour.class.isAssignableFrom(clazz)) {
+                if (!ItemBehaviour.class.isAssignableFrom(clazz)) {
                     throw new JsonParseException("Custom item behaviour class '" + clazz.getName()
-                            + "' does not implement '" + CItemBehaviour.class.getName() + "'");
+                            + "' does not implement '" + ItemBehaviour.class.getName() + "'");
                 }
-                behaviourClazz = (Class<? extends CItemBehaviour>) clazz;
+                behaviourClazz = (Class<? extends ItemBehaviour>) clazz;
             } catch (ClassNotFoundException e) {
                 throw new JsonParseException(e);
             }
         } else {
             behaviourClazz = DefaultItemBehaviour.class;
         }
-        return new CItem(
-                identifier,
-                model,
-                material,
-                name,
-                behaviourClazz
-        );
+        cItem.setBehaviour(behaviourClazz);
+        return cItem;
     }
 }

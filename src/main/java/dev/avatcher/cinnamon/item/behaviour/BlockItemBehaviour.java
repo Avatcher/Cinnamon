@@ -1,10 +1,10 @@
 package dev.avatcher.cinnamon.item.behaviour;
 
-import dev.avatcher.cinnamon.item.CItemBehaviour;
+import dev.avatcher.cinnamon.item.ItemBehaviour;
 
 /**
- * Default {@link CItemBehaviour} implementation for blocks' items
+ * Default {@link ItemBehaviour} implementation for blocks' items
  */
-public class BlockItemBehaviour implements CItemBehaviour {
+public class BlockItemBehaviour implements ItemBehaviour {
 
 }

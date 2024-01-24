@@ -1,23 +1,22 @@
 package dev.avatcher.cinnamon.item;
 
-import dev.avatcher.cinnamon.item.events.CItemRightClickEvent;
+import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
+import dev.avatcher.cinnamon.item.events.ItemUseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Behaviour of a {@link CItem}
  */
-public interface CItemBehaviour {
+public interface ItemBehaviour {
     /**
      * Called when a new {@link ItemStack} of the item
-     * is created.
+     * is created. Use {@link ItemCreateEvent#setItemStack(ItemStack)}
+     * to modify created item
      *
-     * @param itemStack Prepared {@link ItemStack}
-     * @return Final {@link ItemStack} instance
+     * @param event Event
      */
-    default ItemStack onCreate(ItemStack itemStack) {
-        return itemStack;
-    }
+    default void onCreate(ItemCreateEvent event) {}
 
     /**
      * Called when player right clicks with
@@ -25,7 +24,7 @@ public interface CItemBehaviour {
      *
      * @param event Event
      */
-    default void onRightClick(@NotNull CItemRightClickEvent event) {}
+    default void onUse(@NotNull ItemUseEvent event) {}
 
 //    default void onBlockDestroyed() {}
 //    default void onEntityKilled() {}
