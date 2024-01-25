@@ -1,9 +1,13 @@
 package dev.avatcher.cinnamon.resources;
 
 import dev.avatcher.cinnamon.Cinnamon;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Representation of Minecraft's item tag
@@ -17,6 +21,44 @@ public record CustomModelData(NamespacedKey identifier, int numeric) {
      * Starting value of CustomModelData Cinnamon registers
      */
     public static final int START_NUMERIC = 39000;
+
+    /**
+     * Items that use `minecraft:item/handheld` as the
+     * base of their minecraft model
+     */
+    public static final List<Material> HANDHELD_ITEMS;
+
+    static {
+        List<Material> handheldItems = List.of(
+                // Bows
+                Material.BOW,
+                Material.CROSSBOW,
+
+                // Fishing rods
+                Material.FISHING_ROD,
+                Material.CARROT_ON_A_STICK,
+                Material.WARPED_FUNGUS_ON_A_STICK,
+
+                // Sticks
+                Material.STICK,
+                Material.BLAZE_ROD
+        );
+
+        List<String> toolMaterials = List.of("WOODEN", "STONE", "IRON", "GOLDEN", "DIAMOND", "NETHERITE");
+        List<String> toolNames     = List.of("SWORD", "PICKAXE", "AXE", "SHOVEL", "HOE");
+        List<Material> tools = toolMaterials.stream()
+                .flatMap(material -> toolNames.stream()
+                        .map(tool -> material + "_" + tool)
+                        .map(Material::getMaterial)
+                )
+                .toList();
+
+        HANDHELD_ITEMS = Stream.of(handheldItems, tools)
+                .flatMap(Collection::stream)
+                .toList();
+
+        HANDHELD_ITEMS.forEach(System.out::println);
+    }
 
     public CustomModelData(NamespacedKey identifier, int numeric) {
         this.identifier = identifier;

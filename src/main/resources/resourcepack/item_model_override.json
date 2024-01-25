@@ -1,5 +1,5 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "%s",
   "textures": {
     "layer0": "%s"
   },

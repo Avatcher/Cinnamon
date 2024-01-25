@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.block.listeners;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import dev.avatcher.cinnamon.block.CBlock;
+import dev.avatcher.cinnamon.item.CItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -79,21 +80,20 @@ public class NoteblockListener implements Listener {
         itemstack = player.getInventory().getItemInMainHand();
         if (itemstack.getType() == Material.AIR) return;
 
-        BlockFace blockFace = event.getBlockFace();
-        Location placeLocation = event.getClickedBlock().getLocation().add(
-                blockFace.getModX(), blockFace.getModY(), blockFace.getModZ()
-        );
+        Location placeLocation = event.getClickedBlock().getRelative(event.getBlockFace()).getLocation();
         World world = event.getClickedBlock().getWorld();
         // Cancel block placement, if there is an entity
         if (!world.getNearbyLivingEntities(
-                placeLocation.add(.5, .5, .5), .5, .5, .5
+                placeLocation.toCenterLocation(), .5, .5, .5
         ).isEmpty()) return;
-        BlockData blockdata = itemstack.getType().createBlockData();
-        Sound placeSound = blockdata.getSoundGroup().getPlaceSound();
 
-        if (!event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) itemstack.add(-1);
-        world.setBlockData(placeLocation, blockdata);
-        world.playSound(placeLocation, placeSound, 1f, 1f);
+        if (!CItem.isCustom(itemstack) && itemstack.getType().isBlock()) {
+            BlockData blockdata = itemstack.getType().createBlockData();
+            if (!event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) itemstack.add(-1);
+            world.setBlockData(placeLocation, blockdata);
+            Sound placeSound = blockdata.getSoundGroup().getPlaceSound();
+            world.playSound(placeLocation, placeSound, 1f, 1f);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

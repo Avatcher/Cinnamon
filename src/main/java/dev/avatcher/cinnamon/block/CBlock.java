@@ -2,14 +2,13 @@ package dev.avatcher.cinnamon.block;
 
 import dev.avatcher.cinnamon.Cinnamon;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.NoteBlock;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.Set;
 
 @AllArgsConstructor
 public class CBlock {
@@ -34,8 +33,8 @@ public class CBlock {
         return this.tune.getInstrument();
     }
 
-    public void placeAt(@NotNull World world, Location location) {
-        Block block = world.getBlockAt(location);
+    public void placeAt(Location location) {
+        Block block = location.getBlock();
         NoteBlock blockData = (NoteBlock) Material.NOTE_BLOCK.createBlockData();
         blockData.setNote(this.tune.getNote());
         blockData.setInstrument(this.tune.getInstrument());
@@ -53,6 +52,36 @@ public class CBlock {
                 && blockData.getInstrument().equals(CBlock.NOTEBLOCK.getInstrument());
     }
 
+    private static final Set<Material> INTERACTABLE_BLOCKS = Set.of(
+            Material.CRAFTING_TABLE,
+            Material.FURNACE,
+            Material.SMOKER,
+            Material.BLAST_FURNACE,
+            Material.SMITHING_TABLE,
+            Material.CARTOGRAPHY_TABLE,
+            Material.BREWING_STAND,
+            Material.CHEST,
+            Material.TRAPPED_CHEST,
+            Material.ENDER_CHEST,
+            Material.SHULKER_BOX,
+            Material.BARREL,
+            Material.LEVER
+    );
+
+    public static boolean isInteractable(Block block) {
+        if (INTERACTABLE_BLOCKS.contains(block.getType())) {
+            return true;
+        }
+        String type = block.getType().toString();
+        return type.contains("CAULDRON") || type.contains("SIGN")
+                || type.contains("BUTTON") || type.contains("a")
+                || ( type.contains("DOOR") && !type.contains("IRON") );
+    }
+
+    public static Optional<CBlock> of(NamespacedKey key) {
+        return Cinnamon.getInstance().getResourcesManager().getCustomBlocks().get(key);
+    }
+
     public static Optional<CBlock> of(Block block) {
         if (!isCustom(block)) return Optional.empty();
         NoteBlock blockData = (NoteBlock) block.getBlockData();
@@ -63,12 +92,5 @@ public class CBlock {
                 .stream()
                 .filter(cBlock -> cBlock.getTune().equals(blockTune))
                 .findAny();
-    }
-
-    @Builder
-    @Getter
-    public static class RegistrationRequest {
-        private NamespacedKey identifier;
-        private NamespacedKey model;
     }
 }

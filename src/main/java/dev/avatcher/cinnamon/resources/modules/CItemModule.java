@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import dev.avatcher.cinnamon.item.CItem;
 import dev.avatcher.cinnamon.json.CItemDeserializer;
 import dev.avatcher.cinnamon.resources.CinnamonResources;
+import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,7 @@ import java.util.List;
  *
  * @see dev.avatcher.cinnamon.resources.CinnamonModule
  */
+@Getter
 public class CItemModule extends AbstractCinnamonModule<CItem> {
     private final CustomModelDataModule customModelDataModule;
 

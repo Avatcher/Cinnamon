@@ -2,8 +2,12 @@ package dev.avatcher.cinnamon.item;
 
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
+import dev.avatcher.cinnamon.item.behaviour.StructurePlacingItem;
+import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
 import dev.avatcher.cinnamon.item.exceptions.CItemException;
 import dev.avatcher.cinnamon.resources.CustomModelData;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
@@ -20,11 +24,13 @@ import java.util.Optional;
 /**
  * Cinnamon custom item
  */
+@Builder
+@AllArgsConstructor
 public class CItem {
     /**
      * Item used as bare material of the most of the custom items
      */
-    public static final Material MATERIAL = Material.RABBIT_HIDE;
+    public static final Material DEFAULT_MATERIAL = Material.RABBIT_HIDE;
 
     /**
      * {@link NamespacedKey} for accessing custom item identifier
@@ -63,7 +69,8 @@ public class CItem {
     private final CustomModelData model;
 
     @Getter
-    private final Material material;
+    @Builder.Default
+    private final Material material = CItem.DEFAULT_MATERIAL;
 
     /**
      * Item's in-game name
@@ -72,26 +79,18 @@ public class CItem {
     private final Component name;
 
     /**
-     * Class that describes item's behaviour.
+     * Item's behaviour, handling responses to various events.
      * Examples:
      * <ul>
-     *     <li>{@link DefaultItemBehaviour} describes behaviour without any effects</li>
-     *     <li>{@link dev.avatcher.cinnamon.item.behaviour.BlockItemBehaviour} describes
+     *     <li>{@link DefaultItemBehaviour} describes behaviour without any effects.</li>
+     *     <li>{@link StructurePlacingItem} describes
      *     block item behaviour, allowing to place it with right click.
      *     </li>
      * </ul>
      */
-    private Class<? extends CItemBehaviour> behaviour = DefaultItemBehaviour.class;
-
-    private transient Constructor<? extends CItemBehaviour> behaviourConstructor;
-
-    public CItem(NamespacedKey identifier, CustomModelData model, Material material, Component name, Class<? extends CItemBehaviour> behaviour) {
-        this.identifier = identifier;
-        this.model = model;
-        this.material = material;
-        this.name = name;
-        this.setBehaviour(behaviour);
-    }
+    @Getter
+    @Builder.Default
+    private ItemBehaviour behaviour = new DefaultItemBehaviour();
 
     @Override
     public String toString() {
@@ -101,7 +100,7 @@ public class CItem {
     /**
      * Constructs {@link ItemStack} of this custom item.
      * To alter item's creating process, implement
-     * {@link CItemBehaviour#onCreate(ItemStack)} method
+     * {@link ItemBehaviour#onCreate(ItemCreateEvent)} method
      * in item's behaviour.
      *
      * @return {@link ItemStack}
@@ -117,35 +116,49 @@ public class CItem {
                     this.getIdentifier().asString()
             );
         });
-        CItemBehaviour cBehaviour = this.createBehaviour();
-        return cBehaviour.onCreate(item);
+        ItemCreateEvent event = ItemCreateEvent.builder()
+                .itemStack(item)
+                .build();
+        this.getBehaviour().onCreate(event);
+        return event.getItemStack();
     }
 
-    public void setBehaviour(Class<? extends CItemBehaviour> behaviour) {
-        if (behaviour == null) {
-            this.behaviourConstructor = null;
+    public void setBehaviour(ItemBehaviour behaviour) {
+        this.behaviour = behaviour == null
+                ? new DefaultItemBehaviour()
+                : behaviour;
+    }
+
+    public void setBehaviour(Class<? extends ItemBehaviour> clazz) {
+        if (clazz == null) {
+            this.behaviour = new DefaultItemBehaviour();
             return;
         }
-        if (!CItemBehaviour.class.isAssignableFrom(behaviour)) {
-            throw new CItemException("Custom behaviour class '" + behaviour.getName()
-                    + "' does not extend '" + CItemBehaviour.class.getName() + "'");
+        if (!ItemBehaviour.class.isAssignableFrom(clazz)) {
+            throw new CItemException("Custom behaviour class '" + clazz.getName()
+                    + "' does not implement '" + ItemBehaviour.class.getName() + "'");
         }
+        Optional<? extends Constructor<? extends ItemBehaviour>> constructor = this.findConstructor(clazz, CItem.class);
+        Optional<? extends Constructor<? extends ItemBehaviour>> noArgsConstructor = this.findConstructor(clazz);
         try {
-            Constructor<? extends CItemBehaviour> constructor = behaviour.getConstructor();
-            constructor.setAccessible(true);
-            this.behaviour = behaviour;
-            this.behaviourConstructor = constructor;
-        } catch (NoSuchMethodException e) {
-            throw new CItemException("Cannot find behaviour constructor " + behaviour.getName()
-                    + "(" + CItem.class.getName() + ")");
+            if (constructor.isEmpty() && noArgsConstructor.isEmpty()) {
+                throw new CItemException("Couldn't find passing behaviour constructor " + clazz.getName()
+                        + " for item " + this.identifier);
+            }
+            this.behaviour = constructor.isPresent()
+                    ? constructor.get().newInstance(this)
+                    : noArgsConstructor.get().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public CItemBehaviour createBehaviour() {
+    private <T> Optional<Constructor<T>> findConstructor(Class<T> clazz, Class<?>... parameterTypes) {
         try {
-            return this.behaviourConstructor.newInstance();
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new CItemException(e);
+            Constructor<T> constructor = clazz.getConstructor(parameterTypes);
+            return Optional.of(constructor);
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
         }
     }
 
