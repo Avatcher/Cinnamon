@@ -70,6 +70,7 @@ public class ItemEventListener implements Listener {
             itemEvent = ItemClickBlockEvent.builder()
                     .itemStack(event.getItem())
                     .player(event.getPlayer())
+                    .hand(event.getHand())
                     .block(event.getClickedBlock())
                     .blockFace(event.getBlockFace())
                     .build();
@@ -77,6 +78,7 @@ public class ItemEventListener implements Listener {
             itemEvent = ItemUseEvent.builder()
                     .itemStack(event.getItem())
                     .player(event.getPlayer())
+                    .hand(event.getHand())
                     .build();
         }
         if (itemEvent != null) cItem.getBehaviour().onUse(itemEvent);

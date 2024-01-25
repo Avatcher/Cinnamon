@@ -5,6 +5,7 @@ import dev.avatcher.cinnamon.item.ItemBehaviourEvent;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -16,4 +17,5 @@ import org.bukkit.inventory.ItemStack;
 public class ItemUseEvent implements ItemBehaviourEvent {
     private ItemStack itemStack;
     private Player player;
+    private EquipmentSlot hand;
 }

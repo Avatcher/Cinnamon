@@ -43,15 +43,15 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
         CustomModelData model = CustomModelData.of(modelKey)
                 .orElseGet(() -> {
                     log.warning("Couldn't find model '" + modelKey + "' for item " + identifier);
-                    return new CustomModelData(CItem.MATERIAL.getKey(), 0);
+                    return new CustomModelData(CItem.DEFAULT_MATERIAL.getKey(), 0);
                 });
-        Material material = CItem.MATERIAL;
+        Material material = CItem.DEFAULT_MATERIAL;
         if (jObject.has("material")) {
             String materialName = jObject.get("material").getAsString();
             material = Material.matchMaterial(materialName);
             if (material == null) {
                 log.warning("Couldn't find item material: " + materialName);
-                material = CItem.MATERIAL;
+                material = CItem.DEFAULT_MATERIAL;
             }
         }
         Component name = (jObject.get("name").isJsonObject()

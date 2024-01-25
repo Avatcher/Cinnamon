@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.item;
 
 import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.behaviour.DefaultItemBehaviour;
+import dev.avatcher.cinnamon.item.behaviour.StructurePlacingItem;
 import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
 import dev.avatcher.cinnamon.item.exceptions.CItemException;
 import dev.avatcher.cinnamon.resources.CustomModelData;
@@ -29,7 +30,7 @@ public class CItem {
     /**
      * Item used as bare material of the most of the custom items
      */
-    public static final Material MATERIAL = Material.RABBIT_HIDE;
+    public static final Material DEFAULT_MATERIAL = Material.RABBIT_HIDE;
 
     /**
      * {@link NamespacedKey} for accessing custom item identifier
@@ -68,7 +69,8 @@ public class CItem {
     private final CustomModelData model;
 
     @Getter
-    private final Material material;
+    @Builder.Default
+    private final Material material = CItem.DEFAULT_MATERIAL;
 
     /**
      * Item's in-game name
@@ -81,12 +83,13 @@ public class CItem {
      * Examples:
      * <ul>
      *     <li>{@link DefaultItemBehaviour} describes behaviour without any effects.</li>
-     *     <li>{@link dev.avatcher.cinnamon.item.behaviour.BlockItemBehaviour} describes
+     *     <li>{@link StructurePlacingItem} describes
      *     block item behaviour, allowing to place it with right click.
      *     </li>
      * </ul>
      */
     @Getter
+    @Builder.Default
     private ItemBehaviour behaviour = new DefaultItemBehaviour();
 
     @Override

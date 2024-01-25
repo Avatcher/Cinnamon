@@ -53,6 +53,20 @@ public class CustomModelDataModule extends AbstractCinnamonModule<CustomModelDat
     }
 
     /**
+     * Creates and registers a Custom Model Data with
+     * a given name, automatically reserving the next
+     * free numeric id.
+     *
+     * @param key The name of the model
+     * @return Created and registered Custom Model Data
+     */
+    public CustomModelData createAndRegister(NamespacedKey key) {
+        CustomModelData customModelData = new CustomModelData(key, ++this.lastModelId);
+        this.register(key, customModelData);
+        return customModelData;
+    }
+
+    /**
      * Registers a CustomModelData, but does not show an error,
      * when tried to override an existing CustomModelData.
      *

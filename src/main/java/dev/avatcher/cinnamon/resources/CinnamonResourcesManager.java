@@ -111,7 +111,7 @@ public class CinnamonResourcesManager implements Closeable {
         this.customModelData = new CustomModelDataModule();
         this.customItems = new CItemModule(this.customModelData);
         this.noteblockTunes = new NoteblockTuneModule();
-        this.customBlocks = new CBlockModule(this.noteblockTunes);
+        this.customBlocks = new CBlockModule(this.noteblockTunes, this.customItems);
         this.customRecipes = new RecipeModule();
         this.modules = List.of(
                 this.customModelData,
@@ -223,7 +223,7 @@ public class CinnamonResourcesManager implements Closeable {
     }
 
     /**
-     * Generates .json model for {@link CItem#MATERIAL} with all
+     * Generates .json model for {@link CItem#DEFAULT_MATERIAL} with all
      * the registered {@link CustomModelData}.
      *
      * @param resourcePackAssets Resource pack assets folder
