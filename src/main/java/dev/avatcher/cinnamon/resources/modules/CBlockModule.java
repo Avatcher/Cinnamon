@@ -12,6 +12,7 @@ import dev.avatcher.cinnamon.resources.CinnamonResources;
 import lombok.Builder;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,11 +80,12 @@ public class CBlockModule extends AbstractCinnamonModule<CBlock> {
                         CBlock cBlock = new CBlock(request.getIdentifier(), request.getModel(), noteblockTune);
                         this.register(cBlock.getIdentifier(), cBlock);
                         if (request.isItemRequested()) {
-                            NamespacedKey modelKey = new NamespacedKey(cBlock.getIdentifier().getNamespace(), "item/" + cBlock.getIdentifier().getKey());
+                            NamespacedKey modelKey = new NamespacedKey(cBlock.getIdentifier().getNamespace(), "block/" + cBlock.getIdentifier().getKey());
                             CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(cBlock);
                             CItem item = CItem.builder()
                                     .identifier(cBlock.getIdentifier())
-                                    .name(Component.translatable(cBlock.getIdentifier().getNamespace() + ".item." + cBlock.getIdentifier().getKey()))
+                                    .name(Component.translatable("block." + cBlock.getIdentifier().getNamespace() + "." + cBlock.getIdentifier().getKey())
+                                            .decoration(TextDecoration.ITALIC, false))
                                     .model(itemsModule.getCustomModelDataModule().createAndRegister(modelKey))
                                     .behaviour(behaviour)
                                     .build();

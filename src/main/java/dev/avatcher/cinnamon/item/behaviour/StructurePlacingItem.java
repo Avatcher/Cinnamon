@@ -69,7 +69,7 @@ public abstract class StructurePlacingItem implements ItemBehaviour {
 
     /**
      * Checks, if player is cooled down and may
-     * a new structure.
+     * place a new structure.
      *
      * @param player Player to be checked
      * @return {@code true}, if player may place the structure
