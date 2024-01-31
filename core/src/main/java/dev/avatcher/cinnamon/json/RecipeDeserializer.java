@@ -8,6 +8,8 @@ import dev.avatcher.cinnamon.json.recipes.ShapelessRecipeDeserializer;
 import dev.avatcher.cinnamon.json.value.Value;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Recipe;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -27,7 +29,17 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
             "crafting_shapeless", new ShapelessRecipeDeserializer()
     );
 
+    /**
+     * JSON field name responsible for storing
+     * the recipe's type, as defined in {@link #DEFAULT_RECIPE_DESERIALIZERS}
+     * keys
+     */
     public static final String TYPE_FIELD = "type";
+
+    /**
+     * JSON field name responsible for storing the
+     * result of the recipe
+     */
     public static final String RESULT_FIELD = "result";
 
     private final Logger log;
@@ -37,17 +49,39 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
      */
     private final Map<String, JsonDeserializer<? extends Recipe>> deserializers;
 
-
+    /**
+     * Creates a new JSON deserializer for
+     * minecraft recipes.
+     *
+     * @param deserializers Deserializers of different
+     *                      recipes types
+     */
     public RecipeDeserializer(Map<String, JsonDeserializer<? extends Recipe>> deserializers) {
         this.log = Cinnamon.getInstance().getLogger();
         this.deserializers = deserializers;
     }
 
+    /**
+     * Creates a new JSON deserializer for
+     * minecraft recipes using the default
+     * recipe deserializers
+     *
+     * @see #DEFAULT_RECIPE_DESERIALIZERS
+     */
     public RecipeDeserializer() {
         this(DEFAULT_RECIPE_DESERIALIZERS);
     }
 
-    public static String missingField(NamespacedKey recipeIdentifier, String jsonField) {
+    /**
+     * Formats an error message for when a
+     * certain JSON field is not found.
+     *
+     * @param recipeIdentifier Identifier of the recipe
+     * @param jsonField The name of the missing JSON field
+     * @return Formatted error message
+     */
+    @Contract(pure = true)
+    public static @NotNull String missingField(NamespacedKey recipeIdentifier, String jsonField) {
         return "Missing JSON field '" + jsonField + "' in recipe " + recipeIdentifier;
     }
 

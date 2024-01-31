@@ -27,6 +27,12 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
 
     private final Logger log;
 
+    /**
+     * Creates a new JSON deserializer for
+     * custom items owned by certain plugin.
+     *
+     * @param plugin Plugin owning the items
+     */
     public CItemDeserializer(Plugin plugin) {
         this.plugin = plugin;
         this.log = Cinnamon.getInstance().getLogger();

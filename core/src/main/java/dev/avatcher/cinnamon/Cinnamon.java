@@ -143,7 +143,7 @@ public final class Cinnamon extends JavaPlugin {
      * @see ResourcepackServer
      */
     private void initializeResourcepackServer() {
-        boolean active = true;
+        boolean active;
         try {
             var config = Cinnamon.getInstance().getConfig().getConfigurationSection("resourcepack");
             Preconditions.checkNotNull(config);

@@ -106,7 +106,11 @@ public class CinnamonResourcesManager implements Closeable {
 
     private final Logger log;
 
-    public CinnamonResourcesManager() throws IOException {
+    /**
+     * Creates a default Resources manager
+     * Cinnamon utilizes.
+     */
+    public CinnamonResourcesManager() {
         this.log = Cinnamon.getInstance().getLogger();
         this.customModelData = new CustomModelDataModule();
         this.customItems = new CItemModule(this.customModelData);

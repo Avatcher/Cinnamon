@@ -21,7 +21,15 @@ import java.util.stream.Collectors;
  */
 @AllArgsConstructor
 public class ShapedRecipeDeserializer implements JsonDeserializer<ShapedRecipe> {
+    /**
+     * Json field name responsible for recipe's shape
+     */
     public static final String SHAPE_FIELD = "shape";
+
+    /**
+     * Json field name responsible for recipe's ingredients
+     * keys inside shape matrix
+     */
     public static final String KEY_FIELD = "key";
 
     @Override

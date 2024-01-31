@@ -1,6 +1,5 @@
 package dev.avatcher.cdummy.items;
 
-import dev.avatcher.cdummy.CDummy;
 import dev.avatcher.cinnamon.item.ItemBehaviour;
 import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
 import dev.avatcher.cinnamon.item.events.ItemUseEvent;
@@ -13,15 +12,11 @@ import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.logging.Logger;
 
+/**
+ * Excalibur's custom item behaviour
+ */
 public class Excalibur implements ItemBehaviour {
-    private final Logger log;
-
-    public Excalibur() {
-        log = CDummy.getInstance().getLogger();
-    }
-
     @Override
     public void onCreate(ItemCreateEvent event) {
         event.getItemStack().editMeta(meta -> {
@@ -39,6 +34,7 @@ public class Excalibur implements ItemBehaviour {
     public void onUse(@NotNull ItemUseEvent event) {
         Block targetBlock = event.getPlayer().getTargetBlock(null, 50);
         if (targetBlock.getType() != Material.AIR) {
+            assert EntityType.LIGHTNING.getEntityClass() != null;
             targetBlock.getWorld().spawn(targetBlock.getLocation(), EntityType.LIGHTNING.getEntityClass());
             event.getPlayer().swingHand(event.getHand());
         }

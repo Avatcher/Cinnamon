@@ -60,6 +60,13 @@ public record CustomModelData(NamespacedKey identifier, int numeric) {
         HANDHELD_ITEMS.forEach(System.out::println);
     }
 
+    /**
+     * Creates a new CustomModelData with
+     * given identifier and numeric id.
+     *
+     * @param identifier Identifier of the model
+     * @param numeric Numeric id of the model used in-game
+     */
     public CustomModelData(NamespacedKey identifier, int numeric) {
         this.identifier = identifier;
         if (!isCorrectNumber(numeric)) {

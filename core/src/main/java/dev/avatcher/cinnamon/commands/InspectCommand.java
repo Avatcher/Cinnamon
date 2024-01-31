@@ -17,12 +17,32 @@ import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
+/**
+ * <p>An inspect command, that prints information
+ * about certain custom item or block</p>
+ * <p>Created for debugging purposes</p>
+ */
 public class InspectCommand implements CommandBase {
+    /**
+     * The name of the command
+     */
     public static final String NAME = "inspect";
+
+    /**
+     * The name of the subcommand, responsible
+     * for printing information about custom items
+     */
     public static final String SUBCOMMAND_ITEM = "item";
+
+    /**
+     * The name of the subcommand, responsible
+     * for printing information about custom blocks
+     */
     public static final String SUBCOMMAND_BLOCK = "block";
 
     @Override
@@ -42,7 +62,13 @@ public class InspectCommand implements CommandBase {
                 );
     }
 
-    private void inspectItem(Player player, CommandArguments args) {
+    /**
+     * Subcommand to print information about custom item
+     *
+     * @param player Player running the command
+     * @param args Command arguments
+     */
+    private void inspectItem(@NotNull Player player, CommandArguments args) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
             player.sendMessage(Component.text("No item in hand to inspect").color(NamedTextColor.RED));
@@ -72,7 +98,17 @@ public class InspectCommand implements CommandBase {
         player.sendMessage(message);
     }
 
-    private Component inspectItemModel(ItemStack itemStack, CItem cItem) {
+    /**
+     * Constructs a {@link Component} containing information
+     * about custom item's model.
+     *
+     * @param itemStack Itemstack of the custom item
+     * @param cItem Custom item
+     * @return A new {@link Component}, containing custom item's
+     *         model information
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    private @NotNull Component inspectItemModel(@NotNull ItemStack itemStack, @NotNull CItem cItem) {
         int actualModelNum = itemStack.getItemMeta().getCustomModelData();
         boolean isRightModel = actualModelNum == cItem.getModel().numeric();
 
@@ -110,6 +146,12 @@ public class InspectCommand implements CommandBase {
         return MiniMessage.miniMessage().deserialize(messageString);
     }
 
+    /**
+     * Subcommand to print information about custom block
+     *
+     * @param player Player running the command
+     * @param args Command arguments
+     */
     private void inspectBlock(Player player, CommandArguments args) {
         Block block = player.getTargetBlockExact(5);
         if (block == null) {

@@ -76,7 +76,7 @@ public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> i
     }
 
     @Override
-    public void load(@NotNull CinnamonResources resources) throws IOException {
+    public void load(@NotNull CinnamonResources resources) {
         // The method is empty, as noteblock tunes
         // cannot be defined in cinnamon resources,
         // and are registered automatically.

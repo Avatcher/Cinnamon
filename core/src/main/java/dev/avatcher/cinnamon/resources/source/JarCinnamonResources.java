@@ -5,7 +5,6 @@ import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
@@ -21,7 +20,7 @@ public class JarCinnamonResources implements CinnamonResources {
     /**
      * Path to resources folder inside jar
      */
-    public static String CINNAMON_FOLDER = "cinnamon/";
+    public static final String CINNAMON_FOLDER = "cinnamon/";
 
     /**
      * Owner plugin of this resources
@@ -42,6 +41,12 @@ public class JarCinnamonResources implements CinnamonResources {
      */
     private final FileSystem fileSystem;
 
+    /**
+     * Creates new Cinnamon Jar resources
+     *
+     * @param plugin Plugin owning the resources
+     * @param resource Class from the jar containing the resources
+     */
     public JarCinnamonResources(Plugin plugin, Class<?> resource) throws IOException, URISyntaxException {
         this.plugin = plugin;
         this.clazz = resource;
@@ -57,13 +62,14 @@ public class JarCinnamonResources implements CinnamonResources {
 
     }
 
+    /**
+     * Creates new default Cinnamon Jar resources
+     * of a certain plugin.
+     *
+     * @param plugin Plugin owning the resources
+     */
     public JarCinnamonResources(Plugin plugin) throws IOException, URISyntaxException {
         this(plugin, plugin.getClass());
-    }
-
-    @Override
-    public InputStream read(Path path) {
-        return this.clazz.getClassLoader().getResourceAsStream(path.toString());
     }
 
     @Override

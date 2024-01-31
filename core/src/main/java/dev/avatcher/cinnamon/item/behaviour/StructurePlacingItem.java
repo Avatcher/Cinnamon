@@ -40,7 +40,7 @@ public abstract class StructurePlacingItem implements ItemBehaviour {
      */
     public void onUse(@NotNull ItemUseEvent event, Runnable after) {
         if (!(event instanceof ItemClickBlockEvent blockEvent)
-                || (CBlock.isInteractable(blockEvent.getBlock()) && !event.getPlayer().isSneaking())) return;
+                || (CBlock.isIntractable(blockEvent.getBlock()) && !event.getPlayer().isSneaking())) return;
         if (!this.isCooledDown(event.getPlayer())) return;
         this.coolDown(event.getPlayer());
         Location placeLocation = blockEvent.getBlock().getRelative(blockEvent.getBlockFace()).getLocation();

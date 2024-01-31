@@ -4,9 +4,6 @@ import dev.avatcher.cinnamon.resources.CinnamonResources;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -19,11 +16,18 @@ public class FolderCinnamonResources implements CinnamonResources {
      */
     @Getter
     private final Plugin plugin;
+
     /**
      * Folder with the resources inside
      */
     private final Path folder;
 
+    /**
+     * Creates a new cinnamon resources of a certain folder.
+     *
+     * @param plugin Plugin owning the resources
+     * @param folder Path to the folder containing resources
+     */
     public FolderCinnamonResources(Plugin plugin, Path folder) {
         this.plugin = plugin;
         this.folder = folder;
@@ -32,11 +36,6 @@ public class FolderCinnamonResources implements CinnamonResources {
     @Override
     public Path getFolder() {
         return this.folder;
-    }
-
-    @Override
-    public InputStream read(Path path) throws IOException {
-        return Files.newInputStream(path);
     }
 
     @Override

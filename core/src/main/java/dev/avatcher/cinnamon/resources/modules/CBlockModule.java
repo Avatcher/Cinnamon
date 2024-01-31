@@ -38,10 +38,11 @@ public class CBlockModule extends AbstractCinnamonModule<CBlock> {
      * dependency on a certain NoteblockTune Module.
      *
      * @param noteblockTuneModule A NoteblockTune Module dependency
+     * @param itemsModule Custom items module
      *
      * @see NoteblockTune
      */
-    public CBlockModule(NoteblockTuneModule noteblockTuneModule, CItemModule itemsModule) {
+    public CBlockModule(NoteblockTuneModule noteblockTuneModule, @NotNull CItemModule itemsModule) {
         super(CBlock.class);
         this.noteblockTuneModule = noteblockTuneModule;
         this.itemsModule = itemsModule;

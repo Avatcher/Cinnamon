@@ -36,7 +36,7 @@ public class CustomBlockPlacingItem extends StructurePlacingItem {
      * Creates a new behaviour for an item and tries
      * to find a block with the same identifier.
      *
-     * @param cItem
+     * @param cItem Custom item of the block
      */
     public CustomBlockPlacingItem(CItem cItem) {
         Optional<CBlock> block = CBlock.of(cItem.getIdentifier());

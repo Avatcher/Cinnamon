@@ -20,6 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Crystalhearted sword's custom item behaviour
+ */
 public class CrystalheartSword extends StructurePlacingItem {
     private static final Material BLOCK_MATERIAL = Material.PINK_STAINED_GLASS;
     private static final int DECAY_TIME = 3 * 20;

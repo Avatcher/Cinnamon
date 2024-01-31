@@ -2,14 +2,12 @@ package dev.avatcher.cinnamon.json;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
-import dev.avatcher.cinnamon.Cinnamon;
 import dev.avatcher.cinnamon.item.CItem;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Type;
-import java.util.logging.Logger;
 
 /**
  * JSON deserializer for {@link ItemStack}
@@ -19,19 +17,11 @@ public class ItemStackDeserializer implements JsonDeserializer<ItemStack> {
      * JSON field containing item's identifier
      */
     public static final String IDENTIFIER_FIELD = "item";
+
     /**
      * JSON field containing item's amount
      */
     public static final String AMOUNT_FIELD = "amount";
-
-    private final Logger log;
-
-    /**
-     * Creates an recipe ingredient json deserializer.
-     */
-    public ItemStackDeserializer() {
-        this.log = Cinnamon.getInstance().getLogger();
-    }
 
     @Override
     public ItemStack deserialize(

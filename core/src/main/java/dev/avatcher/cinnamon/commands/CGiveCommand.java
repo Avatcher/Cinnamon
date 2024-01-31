@@ -30,6 +30,7 @@ public class CGiveCommand implements CommandBase {
     /**
      * Command's in-game name
      */
+    @SuppressWarnings("SpellCheckingInspection")
     private static final String NAME = "cgive";
 
     /**
@@ -38,6 +39,7 @@ public class CGiveCommand implements CommandBase {
      * @param player Player that ran the command
      * @param args   Command arguments
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public void executePlayer(Player player, CommandArguments args) {
         Collection<Player> targets = args.getUnchecked("target");
         if (targets == null) {

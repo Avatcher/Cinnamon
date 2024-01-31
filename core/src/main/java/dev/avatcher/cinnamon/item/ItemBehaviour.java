@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Behaviour of a {@link CItem}
  */
+@SuppressWarnings("unused")
 public interface ItemBehaviour {
     /**
      * Called when a new {@link ItemStack} of the item
@@ -25,9 +26,4 @@ public interface ItemBehaviour {
      * @param event Event
      */
     default void onUse(@NotNull ItemUseEvent event) {}
-
-//    default void onBlockDestroyed() {}
-//    default void onEntityKilled() {}
-//    default void onSwitchedInHand() {}
-//    default void onSwitchedOutHand() {}
 }

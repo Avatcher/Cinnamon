@@ -15,6 +15,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +25,7 @@ import java.util.Optional;
 /**
  * Cinnamon custom item
  */
+@Getter
 @Builder
 @AllArgsConstructor
 public class CItem {
@@ -45,6 +47,7 @@ public class CItem {
      * 
      * @see #markCustomRecipeResult(ItemStack)
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public static final NamespacedKey RECIPE_MARK_KEY = new NamespacedKey(Cinnamon.getInstance(), "reciperesult");
 
     /**
@@ -59,23 +62,19 @@ public class CItem {
      *  <li>{@code geodic:amethyst_dust}</li>
      * </ul>
      */
-    @Getter
     private final NamespacedKey identifier;
 
     /**
      * {@link CustomModelData} that gives item its unique model.
      */
-    @Getter
     private final CustomModelData model;
 
-    @Getter
     @Builder.Default
     private final Material material = CItem.DEFAULT_MATERIAL;
 
     /**
      * Item's in-game name
      */
-    @Getter
     private final Component name;
 
     /**
@@ -88,7 +87,6 @@ public class CItem {
      *     </li>
      * </ul>
      */
-    @Getter
     @Builder.Default
     private ItemBehaviour behaviour = new DefaultItemBehaviour();
 
@@ -123,12 +121,27 @@ public class CItem {
         return event.getItemStack();
     }
 
-    public void setBehaviour(ItemBehaviour behaviour) {
+    /**
+     * Sets the behaviour of the custom item
+     *
+     * @param behaviour Behaviour to be set
+     */
+    public void setBehaviour(@Nullable ItemBehaviour behaviour) {
         this.behaviour = behaviour == null
                 ? new DefaultItemBehaviour()
                 : behaviour;
     }
 
+    /**
+     * Sets the behaviour of the custom item
+     * by behaviour's java class.
+     *
+     * @param clazz Class of the item behaviour
+     *
+     * @throws CItemException When behaviour's class
+     *                        does not meet the requirements
+     *                        of being an item behaviour
+     */
     public void setBehaviour(Class<? extends ItemBehaviour> clazz) {
         if (clazz == null) {
             this.behaviour = new DefaultItemBehaviour();
@@ -153,6 +166,14 @@ public class CItem {
         }
     }
 
+    /**
+     * Finds a certain constructor in a class.
+     *
+     * @param clazz Class to look for the constructor
+     * @param parameterTypes Parameter types of the constructor
+     * @return {@code Optional.empty()}, if constructor is not found
+     * @param <T> Type of the class
+     */
     private <T> Optional<Constructor<T>> findConstructor(Class<T> clazz, Class<?>... parameterTypes) {
         try {
             Constructor<T> constructor = clazz.getConstructor(parameterTypes);
@@ -216,6 +237,7 @@ public class CItem {
         if (!CItem.isCustom(itemStack)) return Optional.empty();
         String identifier = itemStack.getItemMeta().getPersistentDataContainer()
                 .get(IDENTIFIER_KEY, PersistentDataType.STRING);
+        assert identifier != null;
         return CItem.of(NamespacedKey.fromString(identifier));
     }
 }

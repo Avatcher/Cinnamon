@@ -2,6 +2,9 @@ package dev.avatcher.cinnamon.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
 
+/**
+ * A base of Cinnamon minecraft command
+ */
 public interface CommandBase {
     /**
      * Gets the name of the command.

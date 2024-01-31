@@ -3,8 +3,6 @@ package dev.avatcher.cinnamon.resources;
 import org.bukkit.plugin.Plugin;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 
 /**
@@ -13,8 +11,6 @@ import java.nio.file.Path;
 public interface CinnamonResources extends Closeable {
     /**
      * Default path to configuration file
-     *
-     * @see dev.avatcher.cinnamon.config.CinnamonResourcesConfig
      */
     String CONFIG_FILE = "cinnamon-resources.yml";
     /**
@@ -53,14 +49,6 @@ public interface CinnamonResources extends Closeable {
      * @return Resources owner plugin
      */
     Plugin getPlugin();
-
-    /**
-     * Returns {@link InputStream} of certain file in resources.
-     *
-     * @param path Path to the file
-     * @return File's {@link InputStream}
-     */
-    InputStream read(Path path) throws IOException;
 
     /**
      * Gets path to configuration file.
