@@ -61,14 +61,14 @@ public class CinnamonResourcesManager implements Closeable {
             throw new RuntimeException(e);
         }
         try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(
-                RESOURCE_PACK_FOLDER + "item_model_override.json")) {
+                RESOURCE_PACK_FOLDER + "item_model_override.tjson")) {
             byte[] bytes = in.readAllBytes();
             ITEM_MODEL_OVERRIDE_TEMPLATE = new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(
-                RESOURCE_PACK_FOLDER + "block_model_override.json")) {
+                RESOURCE_PACK_FOLDER + "block_model_override.tjson")) {
             byte[] bytes = in.readAllBytes();
             BLOCK_MODEL_OVERRIDE_TEMPLATE = new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
