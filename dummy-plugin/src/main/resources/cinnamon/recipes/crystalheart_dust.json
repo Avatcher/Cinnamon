@@ -1,0 +1,10 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    { "item": "cdummy:crystalheart" }
+  ],
+  "result": {
+    "item": "cdummy:crystalheart_dust",
+    "amount": 4
+  }
+}

@@ -1,2 +1,3 @@
 rootProject.name = 'cinnamon'
 include 'core'
+include 'dummy-plugin'

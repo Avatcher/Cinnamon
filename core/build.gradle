@@ -22,7 +22,6 @@ processResources {
 jar {
     archiveBaseName = "cinnamon"
     archiveClassifier = "default"
-    enabled = false
     dependsOn shadowJar
 }
 

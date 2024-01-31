@@ -1,0 +1,5 @@
+{
+  "identifier": "crystalheart_dust",
+  "model": "cdummy:item/crystalheart_dust",
+  "name": { "translation": "item.cdummy.crystalheart_dust" }
+}

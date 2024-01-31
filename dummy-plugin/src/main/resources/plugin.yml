@@ -1,0 +1,6 @@
+name: CDummy
+version: '${version}'
+main: dev.avatcher.cdummy.CDummy
+api-version: '1.20'
+load: STARTUP
+depend: [ Cinnamon ]
