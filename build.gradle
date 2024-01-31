@@ -1,11 +1,8 @@
-plugins {
-    id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
-}
-
 subprojects {
     group = "dev.avatcher.cinnamon"
     version = "1.0.0-SNAPSHOT"
+
+    plugins.apply "java"
 
     repositories {
         maven {

@@ -1,5 +1,4 @@
 plugins {
-    id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
@@ -20,8 +19,13 @@ processResources {
     }
 }
 
-jar.archiveBaseName = "cinnamon"
-jar.dependsOn shadowJar
+jar {
+    archiveBaseName = "cinnamon"
+    archiveClassifier = "default"
+    enabled = false
+    dependsOn shadowJar
+}
+
 shadowJar {
     archiveBaseName = jar.archiveBaseName
     archiveClassifier = null
