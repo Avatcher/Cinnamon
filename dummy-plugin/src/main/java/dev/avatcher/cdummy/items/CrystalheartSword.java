@@ -1,11 +1,11 @@
 package dev.avatcher.cdummy.items;
 
 import dev.avatcher.cdummy.CDummy;
-import dev.avatcher.cinnamon.Cinnamon;
-import dev.avatcher.cinnamon.item.behaviour.StructurePlacingItem;
-import dev.avatcher.cinnamon.item.events.ItemClickBlockEvent;
-import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.item.behaviour.StructurePlacingItem;
+import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEvent;
+import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
+import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;

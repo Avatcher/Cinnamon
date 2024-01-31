@@ -1,8 +1,8 @@
 package dev.avatcher.cdummy.items;
 
-import dev.avatcher.cinnamon.item.ItemBehaviour;
-import dev.avatcher.cinnamon.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.item.ItemBehaviour;
+import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
+import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
