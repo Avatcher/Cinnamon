@@ -1,17 +1,14 @@
 package dev.avatcher.cinnamon.block.listeners;
 
-import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import dev.avatcher.cinnamon.block.CBlock;
+import dev.avatcher.cinnamon.block.NoteblockTune;
 import dev.avatcher.cinnamon.item.CItem;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.*;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -20,6 +17,9 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Listener that processes noteblock-related events
@@ -33,30 +33,34 @@ public class NoteblockListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onNoteblockPlay(@NotNull NotePlayEvent event) {
-        if (CBlock.isRegularNoteblock(event.getBlock())) {
-            return;
-        }
+        if (CBlock.isRegularNoteblock(event.getBlock())) return;
         event.setCancelled(true);
     }
 
     /**
      * Manages how noteblocks are broken.
      *
-     * @param event
+     * @param event Event
      */
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onNoteblockDestroyed(BlockDestroyEvent event) {
+    public void onNoteblockDestroyed(BlockBreakEvent event) {
         Block block = event.getBlock();
-        if (block.getType() != Material.NOTE_BLOCK
-                || CBlock.isRegularNoteblock(block)) return;
-        ItemStack testDrop = new ItemStack(Material.EMERALD);
-        testDrop.editMeta(meta -> {
-            meta.displayName(Component.text("TEST DROP")
-                    .color(NamedTextColor.YELLOW)
-                    .decoration(TextDecoration.ITALIC, false));
-        });
-        event.setWillDrop(false);
-        block.getWorld().dropItemNaturally(block.getLocation(), testDrop);
+        Stream.of(BlockFace.DOWN, BlockFace.UP)
+                .map(block::getRelative)
+                .filter(b -> b.getType() == Material.NOTE_BLOCK)
+                .forEach(b -> b.getState().update(true, true));
+
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
+
+        Optional<CBlock> customBlock = CBlock.of(block);
+        if (customBlock.isEmpty() || CBlock.isRegularNoteblock(block)) return;
+
+        Optional<CItem> customItem = CItem.of(customBlock.get().getIdentifier());
+        if (customItem.isEmpty()) return;
+
+        ItemStack drop = customItem.get().getItemStack();
+        event.setDropItems(false);
+        block.getWorld().dropItemNaturally(block.getLocation(), drop);
     }
 
     /**
@@ -69,10 +73,10 @@ public class NoteblockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onNoteblockClicked(@NotNull PlayerInteractEvent event) {
         if (event.getPlayer().isSneaking()
-                || !(event.getAction() == Action.RIGHT_CLICK_BLOCK
-                && event.getClickedBlock() != null
-                && event.getClickedBlock().getType() == Material.NOTE_BLOCK
-        )) return;
+                || event.getAction() != Action.RIGHT_CLICK_BLOCK
+                || event.getClickedBlock() == null
+                || event.getClickedBlock().getType() != Material.NOTE_BLOCK
+        ) return;
         event.setCancelled(true);
 
         Player player = event.getPlayer();
@@ -80,29 +84,16 @@ public class NoteblockListener implements Listener {
         itemstack = player.getInventory().getItemInMainHand();
         if (itemstack.getType() == Material.AIR) return;
 
-        Location placeLocation = event.getClickedBlock().getRelative(event.getBlockFace()).getLocation();
-        World world = event.getClickedBlock().getWorld();
-        // Cancel block placement, if there is an entity
-        if (!world.getNearbyLivingEntities(
-                placeLocation.toCenterLocation(), .5, .5, .5
-        ).isEmpty()) return;
-
         if (!CItem.isCustom(itemstack) && itemstack.getType().isBlock()) {
+            Block placeBlock = event.getClickedBlock().getRelative(event.getBlockFace());
+            if (!placeBlock.getWorld().getNearbyLivingEntities(placeBlock.getLocation().toCenterLocation(),
+                    .5, .5, .5).isEmpty()) return;
             BlockData blockdata = itemstack.getType().createBlockData();
             if (!event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) itemstack.add(-1);
-            world.setBlockData(placeLocation, blockdata);
+            placeBlock.setBlockData(blockdata, true);
             Sound placeSound = blockdata.getSoundGroup().getPlaceSound();
-            world.playSound(placeLocation, placeSound, 1f, 1f);
+            placeBlock.getWorld().playSound(placeBlock.getLocation(), placeSound, 1f, 1f);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onNoteblockPlaced(BlockPlaceEvent event) {
-        Block block = event.getBlock();
-        if (block.getType() != Material.NOTE_BLOCK) return;
-        NoteBlock blockData = (NoteBlock) block.getBlockData();
-        blockData.setInstrument(Instrument.values()[0]);
-        block.setBlockData(blockData);
     }
 
     /**
@@ -110,24 +101,18 @@ public class NoteblockListener implements Listener {
      *
      * @param event Event
      *
-     * @see dev.avatcher.cinnamon.block.NoteblockTune
+     * @see NoteblockTune
      */
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockPhysics(@NotNull BlockPhysicsEvent event) {
-        Block aboveBlock = event.getBlock().getRelative(BlockFace.UP);
-        if (aboveBlock.getType() == Material.NOTE_BLOCK) {
-            updateAndCheck(aboveBlock);
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void MY_onBlockPhysics(BlockPhysicsEvent event) {
+        Block blockAbove = event.getBlock().getRelative(BlockFace.UP);
+        if (blockAbove.getType() == Material.NOTE_BLOCK) {
+            event.setCancelled(true);
+            blockAbove.getState().update(true, true);
+        }
+        if (event.getBlock().getRelative(BlockFace.DOWN).getType() == Material.NOTE_BLOCK) {
             event.setCancelled(true);
         }
-        if (event.getBlock().getType() == Material.NOTE_BLOCK) event.setCancelled(true);
-        if (event.getBlock().getBlockData() instanceof Sign) return;
-        event.getBlock().getState().update(true, false);
-    }
-
-    private void updateAndCheck(@NotNull Block block) {
-        if (block.getType() == Material.NOTE_BLOCK) block.getState().update(true, false);
-        Block aboveBlock = block.getRelative(BlockFace.UP);
-        if (aboveBlock.getType() == Material.NOTE_BLOCK) updateAndCheck(aboveBlock);
     }
 
     /**

@@ -38,7 +38,7 @@ public class CBlock {
         NoteBlock blockData = (NoteBlock) Material.NOTE_BLOCK.createBlockData();
         blockData.setNote(this.tune.getNote());
         blockData.setInstrument(this.tune.getInstrument());
-        block.setBlockData(blockData);
+        block.setBlockData(blockData, true);
     }
 
     public static boolean isCustom(Block block) {
