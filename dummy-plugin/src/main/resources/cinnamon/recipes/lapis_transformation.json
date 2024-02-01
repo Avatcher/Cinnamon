@@ -1,0 +1,10 @@
+{
+  "type": "crafting_shapeless",
+  "ingredients": [
+    { "item": "cdummy:crystalheart_dust", "amount": 3 },
+    { "item": "minecraft:lapis_lazuli"}
+  ],
+  "result": {
+    "item": "minecraft:diamond"
+  }
+}

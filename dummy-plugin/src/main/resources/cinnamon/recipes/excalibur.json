@@ -1,0 +1,13 @@
+{
+  "type": "crafting_shaped",
+  "shape": [
+    "X",
+    "X",
+    "I"
+  ],
+  "key": {
+    "X": { "item": "minecraft:raw_gold" },
+    "I": { "item": "minecraft:blaze_rod" }
+  },
+  "result": { "item": "cdummy:excalibur" }
+}

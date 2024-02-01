@@ -1,0 +1,18 @@
+{
+  "type": "crafting_shaped",
+  "shape": [
+    " D ",
+    "DoD",
+    "WWW"
+  ],
+  "key": {
+    "D": { "item": "minecraft:glowstone_dust" },
+    "o": { "item": "cdummy:excalibur" },
+    "W": { "item": "minecraft:raw_gold" }
+  },
+  "result": {
+    "item": "cdummy:excalibur",
+    "meta": { "display": { "Name": "FOO" }},
+    "amount": 64
+  }
+}

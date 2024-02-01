@@ -1,0 +1,34 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+dependencies {
+    shadow project(":api")
+    shadow "dev.jorel:commandapi-bukkit-shade:9.3.0"
+
+    compileOnly 'io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+jar {
+    archiveBaseName = "cinnamon"
+    archiveClassifier = "default"
+    dependsOn shadowJar
+}
+
+shadowJar {
+    archiveBaseName = jar.archiveBaseName
+    archiveClassifier = null
+    configurations = [project.configurations.shadow]
+    relocate("dev.jorel.commandapi", "dev.avatcher.cinnamon.core.commandapi")
+}

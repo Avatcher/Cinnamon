@@ -1,0 +1,7 @@
+{
+  "identifier": "crystalheart_sword",
+  "material": "minecraft:diamond_sword",
+  "model": "cdummy:item/crystalheart_sword",
+  "name": { "translation": "item.cdummy.crystalheart_sword" },
+  "class": "dev.avatcher.cinnamon.dummy.items.CrystalheartSword"
+}
