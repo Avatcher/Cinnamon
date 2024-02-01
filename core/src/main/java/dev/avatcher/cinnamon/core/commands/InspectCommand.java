@@ -1,8 +1,9 @@
 package dev.avatcher.cinnamon.core.commands;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.block.CBlock;
-import dev.avatcher.cinnamon.core.item.CItem;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
+import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.resources.CustomModelData;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -81,18 +82,18 @@ public class InspectCommand implements CommandBase {
                         .color(NamedTextColor.WHITE))
                 .append(Component.newline());
 
-        if (!CItem.isCustom(itemStack)) {
+        if (!CustomItem.isCustom(itemStack)) {
             player.sendMessage(
                     message.append(Component.text("└ Regular item")));
             return;
         }
-        Optional<CItem> cItemOptional = CItem.of(itemStack);
-        if (cItemOptional.isPresent()) {
+        Optional<CustomItem> optionalCustomItem = CustomItem.get(itemStack);
+        if (optionalCustomItem.isPresent()) {
             message = message
-                    .append(miniMessage.deserialize("<gray>├ Id: <gray><white>" + cItemOptional.get().getIdentifier() + "</white>\n"))
-                    .append(this.inspectItemModel(itemStack, cItemOptional.get()));
+                    .append(miniMessage.deserialize("<gray>├ Id: <gray><white>" + optionalCustomItem.get().getKey() + "</white>\n"))
+                    .append(this.inspectItemModel(itemStack, optionalCustomItem.get()));
         } else {
-            String itemId = itemStack.getItemMeta().getPersistentDataContainer().get(CItem.IDENTIFIER_KEY, PersistentDataType.STRING);
+            String itemId = itemStack.getItemMeta().getPersistentDataContainer().get(CustomItemImpl.IDENTIFIER_KEY, PersistentDataType.STRING);
             message = message.append(miniMessage.deserialize("<gray>└ Id: </gray><red>" + itemId + "\n   ⚠ Invalid identifier</red>\n"));
         }
         player.sendMessage(message);
@@ -103,14 +104,15 @@ public class InspectCommand implements CommandBase {
      * about custom item's model.
      *
      * @param itemStack Itemstack of the custom item
-     * @param cItem Custom item
+     * @param customItem Custom item
      * @return A new {@link Component}, containing custom item's
      *         model information
      */
     @Contract(value = "_, _ -> new", pure = true)
-    private @NotNull Component inspectItemModel(@NotNull ItemStack itemStack, @NotNull CItem cItem) {
+    private @NotNull Component inspectItemModel(@NotNull ItemStack itemStack, @NotNull CustomItem customItem) {
+        if (!(customItem instanceof CustomItemImpl item)) return Component.empty();
         int actualModelNum = itemStack.getItemMeta().getCustomModelData();
-        boolean isRightModel = actualModelNum == cItem.getModel().numeric();
+        boolean isRightModel = actualModelNum == item.getModel().numeric();
 
         String messageString;
         if (isRightModel) {
@@ -120,10 +122,10 @@ public class InspectCommand implements CommandBase {
                       └ <gray>Num:</gray> <white>%s</white>
                     """
             .formatted(
-                    cItem.getModel().identifier(),
-                    cItem.getModel().numeric());
+                    item.getModel().identifier(),
+                    item.getModel().numeric());
         } else {
-            CustomModelData actualModel = Cinnamon.getInstance().getResourcesManager().getCustomModelData().getValues()
+            CustomModelData actualModel = CinnamonPlugin.getInstance().getResourcesManager().getCustomModelData().getValues()
                     .stream()
                     .filter(model -> model.numeric() == actualModelNum).findFirst()
                     .orElse(null);
@@ -139,9 +141,9 @@ public class InspectCommand implements CommandBase {
                     """
             .formatted(
                     actualModelName,
-                    cItem.getModel().identifier(),
+                    item.getModel().identifier(),
                     actualModelNum,
-                    cItem.getModel().numeric());
+                    item.getModel().numeric());
         }
         return MiniMessage.miniMessage().deserialize(messageString);
     }
@@ -170,7 +172,7 @@ public class InspectCommand implements CommandBase {
             player.sendMessage(message);
             return;
         }
-        Optional<CBlock> cBlockOptional = CBlock.of(block);
+        Optional<NoteblockCustomBlock> cBlockOptional = NoteblockCustomBlock.of(block);
         NoteBlock noteBlock = (NoteBlock) block.getBlockData();
         String messageString;
         if (cBlockOptional.isPresent()) {

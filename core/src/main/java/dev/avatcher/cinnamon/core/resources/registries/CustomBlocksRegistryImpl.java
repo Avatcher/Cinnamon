@@ -1,20 +1,23 @@
-package dev.avatcher.cinnamon.core.resources.modules;
+package dev.avatcher.cinnamon.core.resources.registries;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
-import dev.avatcher.cinnamon.core.block.CBlock;
+import dev.avatcher.cinnamon.api.blocks.CustomBlock;
+import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
-import dev.avatcher.cinnamon.core.item.CItem;
+import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.item.behaviour.CustomBlockPlacingItem;
 import dev.avatcher.cinnamon.core.json.CBlockDeserializer;
-import dev.avatcher.cinnamon.core.resources.CinnamonModule;
+import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import lombok.Builder;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -26,13 +29,13 @@ import java.nio.file.Path;
 /**
  * A Cinnamon Module storing custom blocks
  *
- * @see CinnamonModule
+ * @see CinnamonRegistry
  */
 @Getter
-public class CBlockModule extends AbstractCinnamonModule<CBlock> {
-    private final NoteblockTuneModule noteblockTuneModule;
-    private final CItemModule itemsModule;
-    private final CustomModelDataModule customModelDataModule;
+public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlock> implements CustomBlocksRegistry {
+    private final NoteblockTuneRegistry noteblockTuneModule;
+    private final CustomItemsRegistryImpl itemsModule;
+    private final CustomModelDataRegistry customModelDataModule;
 
     /**
      * Creates a new Custom Blocks Module with a
@@ -43,18 +46,24 @@ public class CBlockModule extends AbstractCinnamonModule<CBlock> {
      *
      * @see NoteblockTune
      */
-    public CBlockModule(NoteblockTuneModule noteblockTuneModule, @NotNull CItemModule itemsModule) {
-        super(CBlock.class);
+    public CustomBlocksRegistryImpl(NoteblockTuneRegistry noteblockTuneModule, @NotNull CustomItemsRegistryImpl itemsModule) {
+        super(CustomBlock.class);
         this.noteblockTuneModule = noteblockTuneModule;
         this.itemsModule = itemsModule;
         this.customModelDataModule = itemsModule.getCustomModelDataModule();
-        this.map.put(CBlock.NOTEBLOCK.getIdentifier(), CBlock.NOTEBLOCK);
+        this.map.put(NoteblockCustomBlock.NOTEBLOCK.getIdentifier(), NoteblockCustomBlock.NOTEBLOCK);
     }
 
     @Override
-    public void register(NamespacedKey key, CBlock block) {
-        if (!this.noteblockTuneModule.getKeys().contains(key)) {
-            this.noteblockTuneModule.register(key, block.getTune());
+    public CustomBlock get(Block block) {
+        return NoteblockCustomBlock.of(block).orElse(null);
+    }
+
+    @Override
+    public void register(NamespacedKey key, CustomBlock block) {
+        if (block instanceof NoteblockCustomBlock noteblockCustomBlock
+                && !this.noteblockTuneModule.getKeys().contains(key)) {
+            this.noteblockTuneModule.register(key, noteblockCustomBlock.getTune());
         }
         super.register(key, block);
     }
@@ -79,24 +88,29 @@ public class CBlockModule extends AbstractCinnamonModule<CBlock> {
                     })
                     .forEach(request -> {
                         NoteblockTune noteblockTune = this.noteblockTuneModule.getFreeTone(request.getIdentifier());
-                        CBlock cBlock = new CBlock(request.getIdentifier(), request.getModel(), noteblockTune);
-                        this.register(cBlock.getIdentifier(), cBlock);
+                        NoteblockCustomBlock customBlock = new NoteblockCustomBlock(request.getIdentifier(), request.getModel(), noteblockTune);
+                        this.register(customBlock.getIdentifier(), customBlock);
                         if (request.isItemRequested()) {
-                            NamespacedKey modelKey = new NamespacedKey(cBlock.getIdentifier().getNamespace(), "block/" + cBlock.getIdentifier().getKey());
-                            CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(cBlock);
-                            CItem item = CItem.builder()
-                                    .identifier(cBlock.getIdentifier())
-                                    .name(Component.translatable("block." + cBlock.getIdentifier().getNamespace() + "." + cBlock.getIdentifier().getKey())
+                            NamespacedKey modelKey = new NamespacedKey(customBlock.getIdentifier().getNamespace(), "block/" + customBlock.getIdentifier().getKey());
+                            CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(customBlock);
+                            CustomItemImpl item = CustomItemImpl.builder()
+                                    .identifier(customBlock.getIdentifier())
+                                    .name(Component.translatable("block." + customBlock.getIdentifier().getNamespace() + "." + customBlock.getIdentifier().getKey())
                                             .decoration(TextDecoration.ITALIC, false))
-                                    .model(itemsModule.getCustomModelDataModule().createAndRegister(modelKey))
+                                    .model(customModelDataModule.createAndRegister(modelKey))
                                     .behaviour(behaviour)
                                     .build();
-                            this.itemsModule.register(item.getIdentifier(), item);
+                            this.itemsModule.register(item.getKey(), item);
                         }
                     });
             int loaded = this.map.size() - wasLoaded;
             log.info("[%s] Loaded a total of %d block(s)".formatted(this.clazz.getSimpleName(), loaded));
         }
+    }
+
+    @Override
+    public boolean isCustom(Block block) {
+        return NoteblockCustomBlock.isCustom(block);
     }
 
     /**

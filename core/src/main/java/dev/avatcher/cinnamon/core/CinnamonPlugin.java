@@ -1,6 +1,10 @@
 package dev.avatcher.cinnamon.core;
 
 import com.google.common.base.Preconditions;
+import dev.avatcher.cinnamon.api.Cinnamon;
+import dev.avatcher.cinnamon.api.CinnamonAPI;
+import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
+import dev.avatcher.cinnamon.api.items.CustomItemsRegistry;
 import dev.avatcher.cinnamon.core.block.listeners.NoteblockListener;
 import dev.avatcher.cinnamon.core.commands.CGiveCommand;
 import dev.avatcher.cinnamon.core.commands.CommandBase;
@@ -35,12 +39,12 @@ import java.util.logging.Logger;
 /**
  * Cinnamon plugin
  */
-public final class Cinnamon extends JavaPlugin {
+public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
     /**
      * Instance of the Cinnamon plugin
      */
     @Getter
-    private static Cinnamon instance;
+    private static CinnamonPlugin instance;
 
     private Logger log;
     /**
@@ -60,13 +64,12 @@ public final class Cinnamon extends JavaPlugin {
      *
      * @param plugin Plugin containing Cinnamon resources
      */
-    public static void load(Plugin plugin) {
+    public void load(Plugin plugin) {
         try {
-            Cinnamon.load(new JarCinnamonResources(plugin));
+            this.load(new JarCinnamonResources(plugin));
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     /**
@@ -74,8 +77,18 @@ public final class Cinnamon extends JavaPlugin {
      *
      * @param resources Resources to be loaded
      */
-    public static void load(CinnamonResources resources) {
+    public void load(CinnamonResources resources) {
         instance.getResourcesManager().load(resources);
+    }
+
+    @Override
+    public CustomItemsRegistry getCustomItems() {
+        return this.resourcesManager.getCustomItems();
+    }
+
+    @Override
+    public CustomBlocksRegistry getCustomBlocks() {
+        return this.resourcesManager.getCustomBlocks();
     }
 
     @Override
@@ -106,6 +119,11 @@ public final class Cinnamon extends JavaPlugin {
                 new CGiveCommand(),
                 new InspectCommand()
         );
+        // Register API instance
+        if (Cinnamon.getInstance() == null) {
+            Cinnamon.setInstance(this);
+        }
+
         // Runs code AFTER all the plugins are loaded
         this.getServer().getScheduler().scheduleSyncDelayedTask(this, this::initializeResourcepackServer);
     }
@@ -145,7 +163,7 @@ public final class Cinnamon extends JavaPlugin {
     private void initializeResourcepackServer() {
         boolean active;
         try {
-            var config = Cinnamon.getInstance().getConfig().getConfigurationSection("resourcepack");
+            var config = CinnamonPlugin.getInstance().getConfig().getConfigurationSection("resourcepack");
             Preconditions.checkNotNull(config);
 
             active = config.getBoolean("do-transmit");
@@ -166,9 +184,9 @@ public final class Cinnamon extends JavaPlugin {
             throw new RuntimeException(e);
         }
 
-        Path zipPath = Cinnamon.getInstance().getDataFolder().toPath()
+        Path zipPath = CinnamonPlugin.getInstance().getDataFolder().toPath()
                 .resolve("resourcepack.zip");
-        Path resourcepack = Cinnamon.getInstance().getDataFolder().toPath()
+        Path resourcepack = CinnamonPlugin.getInstance().getDataFolder().toPath()
                 .resolve(CinnamonResourcesManager.RESOURCE_PACK_FOLDER);
         try {
             if (!Files.exists(resourcepack)) {

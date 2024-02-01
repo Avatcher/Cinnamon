@@ -1,7 +1,7 @@
 package dev.avatcher.cinnamon.core.commands;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.item.CItem;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument;
@@ -24,7 +24,7 @@ import java.util.Optional;
 /**
  * A Minecraft command for giving a custom item
  *
- * @see CItem
+ * @see CustomItem
  */
 public class CGiveCommand implements CommandBase {
     /**
@@ -51,20 +51,20 @@ public class CGiveCommand implements CommandBase {
             player.sendMessage(Component.text("Invalid item identifier").color(NamedTextColor.RED));
             return;
         }
-        Optional<CItem> optionalCustomItem = CItem.of(identifier);
+        Optional<CustomItem> optionalCustomItem = CustomItem.get(identifier);
         if (optionalCustomItem.isEmpty()) {
             player.sendMessage(Component.text("Unknown custom item: " + identifier).color(NamedTextColor.RED));
             return;
         }
-        CItem cItem = optionalCustomItem.get();
+        CustomItem customItem = optionalCustomItem.get();
         int amount = (Integer) args.getOptional("amount").orElse(1);
         if (amount > 6400) {
             player.sendMessage(Component.translatable("commands.give.failed.toomanyitems")
-                    .args(Component.text(64000), cItem.getName())
+                    .args(Component.text(64000), customItem.createItemStack().displayName())
                     .color(NamedTextColor.RED));
             return;
         }
-        ItemStack itemStack = cItem.getItemStack();
+        ItemStack itemStack = customItem.createItemStack();
         itemStack.setAmount((Integer) args.getOptional("amount").orElse(1));
         for (var target : targets) {
             target.getInventory().addItem(itemStack);
@@ -76,7 +76,7 @@ public class CGiveCommand implements CommandBase {
                             .args(
                                     Component.text(amount),
                                     Component.translatable("chat.square_brackets")
-                                            .args(cItem.getName()),
+                                            .args(itemStack.displayName()),
                                     Component.text(targets.size())
                             )
             );
@@ -87,7 +87,7 @@ public class CGiveCommand implements CommandBase {
                             .args(
                                     Component.text(amount),
                                     Component.translatable("chat.square_brackets")
-                                            .args(cItem.getName()),
+                                            .args(itemStack.displayName()),
                                     Component.text(target.getName())
                             )
             );
@@ -107,7 +107,7 @@ public class CGiveCommand implements CommandBase {
                         new EntitySelectorArgument.ManyPlayers("target"),
                         new NamespacedKeyArgument("item")
                                 .replaceSafeSuggestions(SafeSuggestions.suggest(info ->
-                                        Cinnamon.getInstance().getResourcesManager().getCustomItems().getKeys()
+                                        CinnamonPlugin.getInstance().getResourcesManager().getCustomItems().getKeys()
                                             .stream()
                                             .toList()
                                                 .toArray(new NamespacedKey[0])

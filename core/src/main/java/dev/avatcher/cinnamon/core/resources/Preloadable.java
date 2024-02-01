@@ -7,7 +7,7 @@ import java.nio.file.Path;
  * A class that can preload its data, that has been
  * obtained previously, from some additional source.
  *
- * @see CinnamonModule
+ * @see CinnamonRegistry
  */
 public interface Preloadable {
     /**

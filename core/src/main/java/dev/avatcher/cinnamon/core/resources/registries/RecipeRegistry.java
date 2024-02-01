@@ -1,4 +1,4 @@
-package dev.avatcher.cinnamon.core.resources.modules;
+package dev.avatcher.cinnamon.core.resources.registries;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -6,7 +6,8 @@ import dev.avatcher.cinnamon.core.json.ItemStackDeserializer;
 import dev.avatcher.cinnamon.core.json.RecipeDeserializer;
 import dev.avatcher.cinnamon.core.json.value.Value;
 import dev.avatcher.cinnamon.core.json.value.ValueProvider;
-import dev.avatcher.cinnamon.core.resources.CinnamonModule;
+import dev.avatcher.cinnamon.core.recipes.CustomRecipe;
+import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -18,25 +19,24 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * A Cinnamon Module storing custom recipes
  *
- * @see CinnamonModule
+ * @see CinnamonRegistry
  */
-public class RecipeModule extends AbstractCinnamonModule<Recipe> {
+public class RecipeRegistry extends AbstractCinnamonRegistry<CustomRecipe> {
     /**
      * Creates a new custom recipes module.
      */
-    public RecipeModule() {
-        super(Recipe.class);
+    public RecipeRegistry() {
+        super(CustomRecipe.class);
     }
 
     @Override
-    public void register(NamespacedKey key, Recipe value) {
+    public void register(NamespacedKey key, CustomRecipe value) {
         super.register(key, value);
-        Bukkit.addRecipe(value);
+        Bukkit.addRecipe(value.getRecipe());
     }
 
     @Override
@@ -58,14 +58,14 @@ public class RecipeModule extends AbstractCinnamonModule<Recipe> {
                         NamespacedKey recipeIdentifier = new NamespacedKey(resources.getPlugin(), recipeName);
                         identifierProvider.setValue(recipeIdentifier);
                         try {
-                            return Map.entry(
+                            return new CustomRecipe(
                                     recipeIdentifier,
                                     gson.fromJson(Files.readString(recipePath), Recipe.class));
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
                     })
-                    .forEach(recipe -> this.register(recipe.getKey(), recipe.getValue()));
+                    .forEach(recipe -> this.register(recipe.getKey(), recipe));
             int loaded = this.map.size() - wasLoaded;
             log.info("[%s] Loaded a total of %d recipe(s)".formatted(this.clazz.getSimpleName(), loaded));
         }

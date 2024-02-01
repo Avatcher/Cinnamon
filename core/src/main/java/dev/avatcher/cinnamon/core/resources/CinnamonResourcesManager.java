@@ -1,10 +1,10 @@
 package dev.avatcher.cinnamon.core.resources;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.block.CBlock;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
-import dev.avatcher.cinnamon.core.item.CItem;
-import dev.avatcher.cinnamon.core.resources.modules.*;
+import dev.avatcher.cinnamon.core.resources.registries.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -55,20 +55,20 @@ public class CinnamonResourcesManager implements Closeable {
     private static final String BLOCK_MODEL_OVERRIDE_TEMPLATE;
 
     static {
-        try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(RESOURCE_PACK_FOLDER + "pack.mcmeta")) {
+        try (var in = CinnamonPlugin.class.getClassLoader().getResourceAsStream(RESOURCE_PACK_FOLDER + "pack.mcmeta")) {
             assert in != null;
             DEFAULT_PACK_MCMETA = in.readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(
+        try (var in = CinnamonPlugin.class.getClassLoader().getResourceAsStream(
                 RESOURCE_PACK_FOLDER + "item_model_override.tjson")) {
             byte[] bytes = in.readAllBytes();
             ITEM_MODEL_OVERRIDE_TEMPLATE = new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        try (var in = Cinnamon.class.getClassLoader().getResourceAsStream(
+        try (var in = CinnamonPlugin.class.getClassLoader().getResourceAsStream(
                 RESOURCE_PACK_FOLDER + "block_model_override.tjson")) {
             byte[] bytes = in.readAllBytes();
             BLOCK_MODEL_OVERRIDE_TEMPLATE = new String(bytes, StandardCharsets.UTF_8);
@@ -81,29 +81,29 @@ public class CinnamonResourcesManager implements Closeable {
      * Module of registered CustomModelData
      */
     @Getter
-    private final CustomModelDataModule customModelData;
+    private final CustomModelDataRegistry customModelData;
     /**
      * Module of registered custom items
      */
     @Getter
-    private final CItemModule customItems;
+    private final CustomItemsRegistryImpl customItems;
     /**
      * Module of registered custom blocks
      */
     @Getter
-    private final CBlockModule customBlocks;
+    private final CustomBlocksRegistryImpl customBlocks;
     /**
      * Module of registered noteblock tunes
      */
     @Getter
-    private final NoteblockTuneModule noteblockTunes;
+    private final NoteblockTuneRegistry noteblockTunes;
     /**
      * Map of registered custom recipes
      */
     @Getter
-    private final RecipeModule customRecipes;
+    private final RecipeRegistry customRecipes;
 
-    private final List<CinnamonModule<?>> modules;
+    private final List<CinnamonRegistry<?>> modules;
 
     private final Logger log;
 
@@ -112,12 +112,12 @@ public class CinnamonResourcesManager implements Closeable {
      * Cinnamon utilizes.
      */
     public CinnamonResourcesManager() {
-        this.log = Cinnamon.getInstance().getLogger();
-        this.customModelData = new CustomModelDataModule();
-        this.customItems = new CItemModule(this.customModelData);
-        this.noteblockTunes = new NoteblockTuneModule();
-        this.customBlocks = new CBlockModule(this.noteblockTunes, this.customItems);
-        this.customRecipes = new RecipeModule();
+        this.log = CinnamonPlugin.getInstance().getLogger();
+        this.customModelData = new CustomModelDataRegistry();
+        this.customItems = new CustomItemsRegistryImpl(this.customModelData);
+        this.noteblockTunes = new NoteblockTuneRegistry();
+        this.customBlocks = new CustomBlocksRegistryImpl(this.noteblockTunes, this.customItems);
+        this.customRecipes = new RecipeRegistry();
         this.modules = List.of(
                 this.customModelData,
                 this.customItems,
@@ -142,18 +142,18 @@ public class CinnamonResourcesManager implements Closeable {
      * @return Optional {@link CustomModelData} (Empty, if CustomModelData was not found)
      */
     public Optional<CustomModelData> getCustomModelData(NamespacedKey identifier) {
-        return this.customModelData.get(identifier);
+        return Optional.ofNullable(this.customModelData.get(identifier));
     }
 
     /**
-     * Returns {@link CItem} with the certain {@link CItem#identifier}.
+     * Returns {@link CustomItem} with a certain key.
      * Empty optional will be returned, if item was not found.
      *
      * @param identifier Item's identifier
-     * @return Optional {@link CItem} (Empty, if item was not found)
+     * @return Optional {@link CustomItem} (Empty, if item was not found)
      */
-    public Optional<CItem> getCItem(NamespacedKey identifier) {
-        return this.customItems.get(identifier);
+    public Optional<CustomItem> getCItem(NamespacedKey identifier) {
+        return Optional.ofNullable(this.customItems.get(identifier));
     }
 
 
@@ -191,13 +191,13 @@ public class CinnamonResourcesManager implements Closeable {
      */
     private void loadAssets(@NotNull CinnamonResources resources) throws IOException {
         if (!Files.exists(resources.getAssetsFolder())) return;
-        Path resourcePack = Cinnamon.getInstance().getDataFolder().toPath().resolve(RESOURCE_PACK_FOLDER);
+        Path resourcePack = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve(RESOURCE_PACK_FOLDER);
         Path resourcePackAssets = resourcePack.resolve(CinnamonResources.ASSETS_FOLDER);
         Files.createDirectories(resourcePackAssets);
         Path assets = resources.getAssetsFolder();
         this.copyAssets(assets, resourcePackAssets);
-        Set<Material> uniqueMaterials = this.customItems.getValues().stream()
-                .map(CItem::getMaterial)
+        Set<Material> uniqueMaterials = this.customItems.stream()
+                .map(CustomItem::getMaterial)
                 .collect(Collectors.toSet());
         for (var material : uniqueMaterials) {
             this.generateItemModelOverrides(resourcePackAssets, material);
@@ -228,7 +228,7 @@ public class CinnamonResourcesManager implements Closeable {
     }
 
     /**
-     * Generates .json model for {@link CItem#DEFAULT_MATERIAL} with all
+     * Generates .json model for item's material with all
      * the registered {@link CustomModelData}.
      *
      * @param resourcePackAssets Resource pack assets folder
@@ -265,9 +265,10 @@ public class CinnamonResourcesManager implements Closeable {
         Path modelOverridesPath = resourcePackAssets.resolve("minecraft/blockstates/note_block.json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
 
-        String modelOverridesValues = this.customBlocks.getValues()
-                .stream()
-                .filter(b -> b != CBlock.NOTEBLOCK)
+        String modelOverridesValues = this.customBlocks.stream()
+                .filter(customBlock -> customBlock instanceof NoteblockCustomBlock)
+                .map(customBlock -> (NoteblockCustomBlock) customBlock)
+                .filter(b -> b != NoteblockCustomBlock.NOTEBLOCK)
                 .map(block -> "\t\t\"note=%d,instrument=%s\": { \"model\": \"%s\" }"
                         .formatted(block.getTune().note(),
                                 block.getTune().getInstrumentMcString(),
@@ -296,7 +297,7 @@ public class CinnamonResourcesManager implements Closeable {
      * resources in Cinnamon.
      */
     private void preloadModules() {
-        Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
+        Path folder = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         if (!Files.exists(folder)) return;
         this.modules.forEach(module -> {
             if (module instanceof Preloadable preloadable) {
@@ -317,7 +318,7 @@ public class CinnamonResourcesManager implements Closeable {
      */
     private void savePreload() {
         log.info("Saving preload...");
-        Path folder = Cinnamon.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
+        Path folder = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve(PRELOAD_FOLDER);
         try {
             Files.createDirectories(folder);
         } catch (IOException e) {

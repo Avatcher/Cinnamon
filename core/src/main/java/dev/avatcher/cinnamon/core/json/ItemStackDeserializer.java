@@ -2,7 +2,7 @@ package dev.avatcher.cinnamon.core.json;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
-import dev.avatcher.cinnamon.core.item.CItem;
+import dev.avatcher.cinnamon.api.items.CustomItem;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -43,8 +43,8 @@ public class ItemStackDeserializer implements JsonDeserializer<ItemStack> {
             Preconditions.checkNotNull(material, "Couldn't find material: " + key);
             itemStack = new ItemStack(material, amount);
         } else {
-            CItem cItem = CItem.of(key).orElseThrow();
-            itemStack = cItem.getItemStack();
+            CustomItem customItem = CustomItem.get(key).orElseThrow();
+            itemStack = customItem.createItemStack();
             itemStack.setAmount(amount);
         }
         return itemStack;

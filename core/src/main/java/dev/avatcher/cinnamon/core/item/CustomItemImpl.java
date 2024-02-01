@@ -1,10 +1,13 @@
 package dev.avatcher.cinnamon.core.item;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.api.items.ItemBehaviour;
+import dev.avatcher.cinnamon.api.items.events.ItemCreateEvent;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.core.item.behaviour.StructurePlacingItem;
-import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.core.item.exceptions.CItemException;
+import dev.avatcher.cinnamon.core.item.events.ItemCreateEventImpl;
+import dev.avatcher.cinnamon.core.item.exceptions.CustomItemException;
 import dev.avatcher.cinnamon.core.resources.CustomModelData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +18,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -28,7 +32,7 @@ import java.util.Optional;
 @Getter
 @Builder
 @AllArgsConstructor
-public class CItem {
+public class CustomItemImpl implements CustomItem {
     /**
      * Item used as bare material of the most of the custom items
      */
@@ -38,7 +42,7 @@ public class CItem {
      * {@link NamespacedKey} for accessing custom item identifier
      * inside of {@link ItemStack}'s {@link PersistentDataContainer}
      */
-    public static final NamespacedKey IDENTIFIER_KEY = new NamespacedKey(Cinnamon.getInstance(), "identifier");
+    public static final NamespacedKey IDENTIFIER_KEY = new NamespacedKey(CinnamonPlugin.getInstance(), "identifier");
 
     /**
      * {@link NamespacedKey} for {@link PersistentDataContainer} marking an {@link ItemStack} as a result
@@ -48,7 +52,7 @@ public class CItem {
      * @see #markCustomRecipeResult(ItemStack)
      */
     @SuppressWarnings("SpellCheckingInspection")
-    public static final NamespacedKey RECIPE_MARK_KEY = new NamespacedKey(Cinnamon.getInstance(), "reciperesult");
+    public static final NamespacedKey RECIPE_MARK_KEY = new NamespacedKey(CinnamonPlugin.getInstance(), "reciperesult");
 
     /**
      * Identifier of the custom item, that follow default minecraft
@@ -70,7 +74,7 @@ public class CItem {
     private final CustomModelData model;
 
     @Builder.Default
-    private final Material material = CItem.DEFAULT_MATERIAL;
+    private final Material material = CustomItemImpl.DEFAULT_MATERIAL;
 
     /**
      * Item's in-game name
@@ -103,7 +107,7 @@ public class CItem {
      *
      * @return {@link ItemStack}
      */
-    public ItemStack getItemStack() {
+    public ItemStack createItemStack() {
         var item = new ItemStack(this.material);
         item.editMeta(meta -> {
             meta.displayName(this.name);
@@ -114,7 +118,7 @@ public class CItem {
                     this.getIdentifier().asString()
             );
         });
-        ItemCreateEvent event = ItemCreateEvent.builder()
+        ItemCreateEventImpl event = ItemCreateEventImpl.builder()
                 .itemStack(item)
                 .build();
         this.getBehaviour().onCreate(event);
@@ -138,7 +142,7 @@ public class CItem {
      *
      * @param clazz Class of the item behaviour
      *
-     * @throws CItemException When behaviour's class
+     * @throws CustomItemException When behaviour's class
      *                        does not meet the requirements
      *                        of being an item behaviour
      */
@@ -148,14 +152,14 @@ public class CItem {
             return;
         }
         if (!ItemBehaviour.class.isAssignableFrom(clazz)) {
-            throw new CItemException("Custom behaviour class '" + clazz.getName()
+            throw new CustomItemException("Custom behaviour class '" + clazz.getName()
                     + "' does not implement '" + ItemBehaviour.class.getName() + "'");
         }
-        Optional<? extends Constructor<? extends ItemBehaviour>> constructor = this.findConstructor(clazz, CItem.class);
+        Optional<? extends Constructor<? extends ItemBehaviour>> constructor = this.findConstructor(clazz, CustomItem.class);
         Optional<? extends Constructor<? extends ItemBehaviour>> noArgsConstructor = this.findConstructor(clazz);
         try {
             if (constructor.isEmpty() && noArgsConstructor.isEmpty()) {
-                throw new CItemException("Couldn't find passing behaviour constructor " + clazz.getName()
+                throw new CustomItemException("Couldn't find passing behaviour constructor " + clazz.getName()
                         + " for item " + this.identifier);
             }
             this.behaviour = constructor.isPresent()
@@ -194,8 +198,8 @@ public class CItem {
     public static ItemStack markCustomRecipeResult(ItemStack itemStack) {
         itemStack.editMeta(meta -> {
             PersistentDataContainer persistentDataContainer = meta.getPersistentDataContainer();
-            if (!persistentDataContainer.has(CItem.IDENTIFIER_KEY)) {
-                persistentDataContainer.set(CItem.IDENTIFIER_KEY,
+            if (!persistentDataContainer.has(CustomItemImpl.IDENTIFIER_KEY)) {
+                persistentDataContainer.set(CustomItemImpl.IDENTIFIER_KEY,
                         PersistentDataType.STRING, itemStack.getType().getKey().toString());
             }
             persistentDataContainer.set(RECIPE_MARK_KEY, PersistentDataType.BOOLEAN, true);
@@ -216,28 +220,33 @@ public class CItem {
     }
 
     /**
-     * Returns {@link CItem} with the certain {@link CItem#identifier}.
+     * Returns {@link CustomItem} with the certain key.
      * Empty optional will be returned, if item was not found.
      *
      * @param identifier Item's identifier
-     * @return Optional {@link CItem} (Empty, if item was not found)
+     * @return Optional {@link CustomItem} (Empty, if item was not found)
      */
-    public static Optional<CItem> of(NamespacedKey identifier) {
-        return Cinnamon.getInstance().getResourcesManager().getCItem(identifier);
+    public static Optional<CustomItem> of(NamespacedKey identifier) {
+        return CinnamonPlugin.getInstance().getResourcesManager().getCItem(identifier);
     }
 
     /**
-     * Returns {@link CItem} of the certain {@link ItemStack}, if it
+     * Returns {@link CustomItem} of the certain {@link ItemStack}, if it
      * contains custom items, otherwise empty {@link Optional}.
      *
      * @param itemStack Custom item stack
-     * @return Optional {@link CItem} (Empty, if was not find)
+     * @return Optional {@link CustomItem} (Empty, if was not find)
      */
-    public static Optional<CItem> of(ItemStack itemStack) {
-        if (!CItem.isCustom(itemStack)) return Optional.empty();
+    public static Optional<CustomItem> of(ItemStack itemStack) {
+        if (!CustomItem.isCustom(itemStack)) return Optional.empty();
         String identifier = itemStack.getItemMeta().getPersistentDataContainer()
                 .get(IDENTIFIER_KEY, PersistentDataType.STRING);
         assert identifier != null;
-        return CItem.of(NamespacedKey.fromString(identifier));
+        return CustomItem.get(NamespacedKey.fromString(identifier));
+    }
+
+    @Override
+    public @NotNull NamespacedKey getKey() {
+        return this.getIdentifier();
     }
 }

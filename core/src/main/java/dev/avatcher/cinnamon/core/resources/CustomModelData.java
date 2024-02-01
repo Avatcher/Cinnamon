@@ -1,8 +1,10 @@
 package dev.avatcher.cinnamon.core.resources;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.stream.Stream;
  * @param identifier Identifier of the model
  * @param numeric    Value of CustomModelData tag used in game
  */
-public record CustomModelData(NamespacedKey identifier, int numeric) {
+public record CustomModelData(NamespacedKey identifier, int numeric) implements Keyed {
     /**
      * Starting value of CustomModelData Cinnamon registers
      */
@@ -93,6 +95,11 @@ public record CustomModelData(NamespacedKey identifier, int numeric) {
      * @return Optional {@link CustomModelData} (Empty, if CustomModelData was not found)
      */
     public static Optional<CustomModelData> of(NamespacedKey identifier) {
-        return Cinnamon.getInstance().getResourcesManager().getCustomModelData(identifier);
+        return CinnamonPlugin.getInstance().getResourcesManager().getCustomModelData(identifier);
+    }
+
+    @Override
+    public @NotNull NamespacedKey getKey() {
+        return this.identifier();
     }
 }

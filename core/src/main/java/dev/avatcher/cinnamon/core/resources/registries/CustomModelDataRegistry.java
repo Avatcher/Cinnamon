@@ -1,10 +1,10 @@
-package dev.avatcher.cinnamon.core.resources.modules;
+package dev.avatcher.cinnamon.core.resources.registries;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dev.avatcher.cinnamon.core.json.NamespacedKeyAdapter;
-import dev.avatcher.cinnamon.core.resources.CinnamonModule;
+import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CustomModelData;
 import dev.avatcher.cinnamon.core.resources.Preloadable;
@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 /**
  * A Cinnamon Module storing CustomModelData
  *
- * @see CinnamonModule
+ * @see CinnamonRegistry
  */
-public class CustomModelDataModule extends AbstractCinnamonModule<CustomModelData> implements Preloadable {
+public class CustomModelDataRegistry extends AbstractCinnamonRegistry<CustomModelData> implements Preloadable {
     /**
      * The name of the file where
      * the preload data is stored
@@ -38,7 +38,7 @@ public class CustomModelDataModule extends AbstractCinnamonModule<CustomModelDat
      * Numeration of the CustomModelData
      * will begin at {@value CustomModelData#START_NUMERIC}.
      */
-    public CustomModelDataModule() {
+    public CustomModelDataRegistry() {
         super(CustomModelData.class);
         this.lastModelId = CustomModelData.START_NUMERIC;
     }

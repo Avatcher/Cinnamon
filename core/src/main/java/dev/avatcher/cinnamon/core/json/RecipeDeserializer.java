@@ -2,7 +2,7 @@ package dev.avatcher.cinnamon.core.json;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.*;
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.json.recipes.ShapedRecipeDeserializer;
 import dev.avatcher.cinnamon.core.json.recipes.ShapelessRecipeDeserializer;
 import dev.avatcher.cinnamon.core.json.value.Value;
@@ -57,7 +57,7 @@ public class RecipeDeserializer implements JsonDeserializer<Recipe> {
      *                      recipes types
      */
     public RecipeDeserializer(Map<String, JsonDeserializer<? extends Recipe>> deserializers) {
-        this.log = Cinnamon.getInstance().getLogger();
+        this.log = CinnamonPlugin.getInstance().getLogger();
         this.deserializers = deserializers;
     }
 

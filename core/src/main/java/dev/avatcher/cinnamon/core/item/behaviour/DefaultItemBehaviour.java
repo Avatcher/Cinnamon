@@ -1,6 +1,6 @@
 package dev.avatcher.cinnamon.core.item.behaviour;
 
-import dev.avatcher.cinnamon.core.item.ItemBehaviour;
+import dev.avatcher.cinnamon.api.items.ItemBehaviour;
 
 /**
  * Default implementation of {@link ItemBehaviour} without

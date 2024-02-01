@@ -1,9 +1,9 @@
 package dev.avatcher.cinnamon.core.item.behaviour;
 
 import com.google.common.base.Preconditions;
-import dev.avatcher.cinnamon.core.block.CBlock;
-import dev.avatcher.cinnamon.core.item.CItem;
-import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.api.items.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -19,7 +19,7 @@ public class CustomBlockPlacingItem extends StructurePlacingItem {
     /**
      * Custom block to be placed
      */
-    private final CBlock block;
+    private final NoteblockCustomBlock block;
 
     /**
      * Creates a new behaviour for an item, that
@@ -28,7 +28,7 @@ public class CustomBlockPlacingItem extends StructurePlacingItem {
      *
      * @param block Custom block to be placed
      */
-    public CustomBlockPlacingItem(CBlock block) {
+    public CustomBlockPlacingItem(NoteblockCustomBlock block) {
         this.block = block;
     }
 
@@ -38,10 +38,10 @@ public class CustomBlockPlacingItem extends StructurePlacingItem {
      *
      * @param cItem Custom item of the block
      */
-    public CustomBlockPlacingItem(CItem cItem) {
-        Optional<CBlock> block = CBlock.of(cItem.getIdentifier());
+    public CustomBlockPlacingItem(CustomItem cItem) {
+        Optional<NoteblockCustomBlock> block = NoteblockCustomBlock.of(cItem.getKey());
         Preconditions.checkArgument(block.isPresent(), "Could not find block %s for responding item"
-                .formatted(cItem.getIdentifier()));
+                .formatted(cItem.getKey()));
         this.block = block.get();
     }
 
@@ -49,7 +49,7 @@ public class CustomBlockPlacingItem extends StructurePlacingItem {
     public void onUse(@NotNull ItemUseEvent event) {
         super.onUse(event, () -> {
             event.getPlayer().swingHand(event.getHand());
-            if (event.getPlayer().getGameMode() == GameMode.CREATIVE || event.getItemStack() == null) return;
+            if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
             event.getItemStack().add(-1);
         });
     }

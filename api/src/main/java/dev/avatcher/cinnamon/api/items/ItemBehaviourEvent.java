@@ -1,4 +1,4 @@
-package dev.avatcher.cinnamon.core.item;
+package dev.avatcher.cinnamon.api.items;
 
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Representation of an event of a custom item
  *
- * @see ItemBehaviour
+ * @see dev.avatcher.cinnamon.api.items.ItemBehaviour
  */
 public interface ItemBehaviourEvent {
     /**

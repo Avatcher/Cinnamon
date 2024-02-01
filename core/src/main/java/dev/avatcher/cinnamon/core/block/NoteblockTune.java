@@ -1,6 +1,8 @@
 package dev.avatcher.cinnamon.core.block;
 
 import org.bukkit.Instrument;
+import org.bukkit.Keyed;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Note;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * A representation of a Minecraft noteblock tune,
  * including its note and instrument.
  */
-public record NoteblockTune(byte note, byte instrument) {
+public record NoteblockTune(NamespacedKey key, byte note, byte instrument) implements Keyed {
     /**
      * Gets the note of the noteblock tune.
      *
@@ -66,5 +68,10 @@ public record NoteblockTune(byte note, byte instrument) {
         String soundName = this.getInstrument().getSound().name().toLowerCase();
         System.out.println("s: " + soundName);
         return soundName.substring(soundName.lastIndexOf("_") + 1);
+    }
+
+    @Override
+    public @NotNull NamespacedKey getKey() {
+        return null;
     }
 }

@@ -4,7 +4,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -61,7 +61,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
      * @param message Message for when player is suggested to install resourcepack
      */
     public ResourcepackServer(int port, @Nullable URL url, Component message) throws IOException {
-        this.log = Cinnamon.getInstance().getLogger();
+        this.log = CinnamonPlugin.getInstance().getLogger();
 
         this.url = url == null
                 ? new URL("http://localhost:%s".formatted(port))

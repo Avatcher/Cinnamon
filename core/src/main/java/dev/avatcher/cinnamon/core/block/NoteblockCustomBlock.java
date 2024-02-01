@@ -1,10 +1,12 @@
 package dev.avatcher.cinnamon.core.block;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.api.blocks.CustomBlock;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.NoteBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,15 +19,18 @@ import java.util.Set;
  */
 @Getter
 @AllArgsConstructor
-public class CBlock {
+public class NoteblockCustomBlock implements CustomBlock {
     /**
      * A custom block representing a "normal" noteblock
      */
-    public static final CBlock NOTEBLOCK = new CBlock(
-            NamespacedKey.minecraft("note_block"),
-            NamespacedKey.minecraft("block/note_block"),
-            new NoteblockTune((byte) 0, (byte) 0)
-    );
+    public static final NoteblockCustomBlock NOTEBLOCK;
+
+    static {
+        NamespacedKey noteblockKey = NamespacedKey.minecraft("note_block");
+        NamespacedKey noteblockModelKey = NamespacedKey.minecraft("block/note_block");
+        NoteblockTune noteblockTune = new NoteblockTune(noteblockKey, (byte) 0, (byte) 0);
+        NOTEBLOCK = new NoteblockCustomBlock(noteblockKey, noteblockModelKey, noteblockTune);
+    }
 
     private final NamespacedKey identifier;
     private final NamespacedKey model;
@@ -77,6 +82,11 @@ public class CBlock {
         return block != null && block.getType() == Material.NOTE_BLOCK;
     }
 
+    @Override
+    public BlockData createBlockData() {
+        return null;
+    }
+
     /**
      * Checks, if certain block is a custom block
      * <strong>and</strong> it is a normal noteblock.
@@ -87,8 +97,8 @@ public class CBlock {
     public static boolean isRegularNoteblock(@Nullable Block block) {
         if (!isCustom(block)) return false;
         NoteBlock blockData = (NoteBlock) block.getBlockData();
-        return blockData.getNote().equals(CBlock.NOTEBLOCK.getNote())
-                && blockData.getInstrument().equals(CBlock.NOTEBLOCK.getInstrument());
+        return blockData.getNote().equals(NoteblockCustomBlock.NOTEBLOCK.getNote())
+                && blockData.getInstrument().equals(NoteblockCustomBlock.NOTEBLOCK.getInstrument());
     }
 
     /**
@@ -136,8 +146,10 @@ public class CBlock {
      * @return {@code Optional.empty()}, if the custom block
      *         is not found
      */
-    public static Optional<CBlock> of(NamespacedKey key) {
-        return Cinnamon.getInstance().getResourcesManager().getCustomBlocks().get(key);
+    public static Optional<NoteblockCustomBlock> of(NamespacedKey key) {
+        CustomBlock customBlock = CinnamonPlugin.getInstance().getResourcesManager().getCustomBlocks().get(key);
+        if (!(customBlock instanceof NoteblockCustomBlock noteblockCustomBlock)) return Optional.empty();
+        return Optional.of(noteblockCustomBlock);
     }
 
     /**
@@ -148,15 +160,21 @@ public class CBlock {
      *         is not custom and finding a custom block
      *         is not possible
      */
-    public static Optional<CBlock> of(Block block) {
+    public static Optional<NoteblockCustomBlock> of(Block block) {
         if (!isCustom(block)) return Optional.empty();
         NoteBlock blockData = (NoteBlock) block.getBlockData();
-        NoteblockTune blockTune = new NoteblockTune(blockData.getNote().getId(), blockData.getInstrument().getType());
-        return Cinnamon.getInstance().getResourcesManager()
-                .getCustomBlocks()
-                .getValues()
-                .stream()
-                .filter(cBlock -> cBlock.getTune().equals(blockTune))
+        Note blockNote = blockData.getNote();
+        Instrument blockInstrument = blockData.getInstrument();
+        return CinnamonPlugin.getInstance().getResourcesManager().getCustomBlocks().stream()
+                .filter(customBlock -> customBlock instanceof NoteblockCustomBlock)
+                .map(customBlock -> (NoteblockCustomBlock) customBlock)
+                .filter(customBlock -> customBlock.getNote().equals(blockNote))
+                .filter(customBlock -> customBlock.getInstrument().equals(blockInstrument))
                 .findAny();
+    }
+
+    @Override
+    public @NotNull NamespacedKey getKey() {
+        return this.getIdentifier();
     }
 }

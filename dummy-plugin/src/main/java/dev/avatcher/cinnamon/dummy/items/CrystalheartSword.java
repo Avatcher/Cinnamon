@@ -1,10 +1,10 @@
 package dev.avatcher.cinnamon.dummy.items;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.item.behaviour.StructurePlacingItem;
-import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEvent;
-import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEventImpl;
+import dev.avatcher.cinnamon.core.item.events.ItemCreateEventImpl;
+import dev.avatcher.cinnamon.core.item.events.ItemUseEventImpl;
 import dev.avatcher.cinnamon.dummy.CDummy;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -30,7 +30,7 @@ public class CrystalheartSword extends StructurePlacingItem {
     private final Set<UUID> cooldowns = new HashSet<>();
 
     @Override
-    public void onCreate(ItemCreateEvent event) {
+    public void onCreate(ItemCreateEventImpl event) {
         event.getItemStack().editMeta(meta -> {
             meta.lore(List.of(Component.empty()
                     .decoration(TextDecoration.ITALIC, false)
@@ -43,7 +43,7 @@ public class CrystalheartSword extends StructurePlacingItem {
     }
 
     @Override
-    public void onUse(@NotNull ItemUseEvent event) {
+    public void onUse(@NotNull ItemUseEventImpl event) {
         if (!this.isCooledDown(event.getPlayer())) return;
         if (event.getPlayer().isSneaking()
                 && this.placedBlocks.containsKey(event.getPlayer().getUniqueId())) {
@@ -58,7 +58,7 @@ public class CrystalheartSword extends StructurePlacingItem {
             return;
         }
         super.onUse(event, () -> {
-            ItemClickBlockEvent blockEvent = (ItemClickBlockEvent) event;
+            ItemClickBlockEventImpl blockEvent = (ItemClickBlockEventImpl) event;
             Location placeLocation = blockEvent.getBlock().getRelative(blockEvent.getBlockFace()).getLocation().toBlockLocation();
             UUID playerUUID = event.getPlayer().getUniqueId();
             if (!this.placedBlocks.containsKey(playerUUID)) {
@@ -124,6 +124,6 @@ public class CrystalheartSword extends StructurePlacingItem {
             public void run() {
                 cooldowns.remove(player.getUniqueId());
             }
-        }.runTaskLater(Cinnamon.getInstance(), 1);
+        }.runTaskLater(CinnamonPlugin.getInstance(), 1);
     }
 }

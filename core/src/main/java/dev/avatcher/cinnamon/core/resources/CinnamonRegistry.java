@@ -1,11 +1,12 @@
 package dev.avatcher.cinnamon.core.resources;
 
+import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -13,16 +14,7 @@ import java.util.Set;
  *
  * @param <T> The type of the resources in the storage
  */
-public interface CinnamonModule<T> {
-    /**
-     * Gets resources by its key, or else an empty
-     * {@link Optional}, if the data was not found.
-     *
-     * @param key Key of the resources
-     * @return Empty {@link Optional}, if data is not found
-     */
-    Optional<T> get(NamespacedKey key);
-
+public interface CinnamonRegistry<T extends Keyed> extends Registry<T> {
     /**
      * Registers resources.
      *

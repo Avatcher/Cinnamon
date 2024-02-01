@@ -1,17 +1,15 @@
 package dev.avatcher.cinnamon.core.item.exceptions;
 
-import dev.avatcher.cinnamon.core.item.CItem;
-
 /**
- * Exception related to {@link CItem}
+ * Exception related to {@link dev.avatcher.cinnamon.api.items.CustomItem}
  */
-public class CItemException extends RuntimeException {
+public class CustomItemException extends RuntimeException {
     /**
      * Creates a new exception with a certain message.
      *
      * @param message Error message
      */
-    public CItemException(String message) {
+    public CustomItemException(String message) {
         super(message);
     }
 }

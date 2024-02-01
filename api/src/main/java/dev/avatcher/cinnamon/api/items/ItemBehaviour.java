@@ -1,14 +1,13 @@
-package dev.avatcher.cinnamon.core.item;
+package dev.avatcher.cinnamon.api.items;
 
-import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.api.items.events.ItemCreateEvent;
+import dev.avatcher.cinnamon.api.items.events.ItemUseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Behaviour of a {@link CItem}
+ * Behaviour of a custom item
  */
-@SuppressWarnings("unused")
 public interface ItemBehaviour {
     /**
      * Called when a new {@link ItemStack} of the item

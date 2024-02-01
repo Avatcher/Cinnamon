@@ -1,12 +1,12 @@
-package dev.avatcher.cinnamon.core.resources.modules;
+package dev.avatcher.cinnamon.core.resources.registries;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import dev.avatcher.cinnamon.core.block.CBlock;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
 import dev.avatcher.cinnamon.core.json.NamespacedKeyAdapter;
-import dev.avatcher.cinnamon.core.resources.CinnamonModule;
+import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.Preloadable;
 import org.bukkit.NamespacedKey;
@@ -21,9 +21,9 @@ import java.util.Map;
 /**
  * A Cinnamon Module storing noteblock tunes
  *
- * @see CinnamonModule
+ * @see CinnamonRegistry
  */
-public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> implements Preloadable {
+public class NoteblockTuneRegistry extends AbstractCinnamonRegistry<NoteblockTune> implements Preloadable {
     /**
      * The name of the file where
      * the preload data is stored
@@ -33,7 +33,7 @@ public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> i
     /**
      * Creates a new noteblock tunes module.
      */
-    public NoteblockTuneModule() {
+    public NoteblockTuneRegistry() {
         super(NoteblockTune.class);
     }
 
@@ -46,9 +46,7 @@ public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> i
      * @return The next free noteblock tone
      */
     public NoteblockTune getFreeTone(NamespacedKey key) {
-        if (this.get(key).isPresent()) {
-            return this.get(key).get();
-        }
+        if (this.get(key) != null) return this.get(key);
         byte note = this.getValues().stream()
                 .map(NoteblockTune::note)
                 .max(Byte::compareTo)
@@ -63,7 +61,7 @@ public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> i
         } else {
             note = (byte) (note + 1);
         }
-        return new NoteblockTune(note, instrument);
+        return new NoteblockTune(key, note, instrument);
     }
 
     @Override
@@ -91,7 +89,7 @@ public class NoteblockTuneModule extends AbstractCinnamonModule<NoteblockTune> i
      */
     private void preloadTune(NamespacedKey key, NoteblockTune tune) {
         if (this.map.containsKey(key)) return;
-        if (tune.equals(CBlock.NOTEBLOCK.getTune())) {
+        if (tune.equals(NoteblockCustomBlock.NOTEBLOCK.getTune())) {
             log.warning("[%s] Override default noteblock's tune (0,0) is not allowed: %s"
                     .formatted(this.clazz.getSimpleName(), key));
             return;

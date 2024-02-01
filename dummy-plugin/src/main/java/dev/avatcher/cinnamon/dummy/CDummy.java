@@ -1,6 +1,6 @@
 package dev.avatcher.cinnamon.dummy;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -22,7 +22,7 @@ public final class CDummy extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        Cinnamon.load(this);
+        CinnamonPlugin.load(this);
     }
 
     @Override

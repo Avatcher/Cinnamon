@@ -1,18 +1,22 @@
-package dev.avatcher.cinnamon.core.resources.modules;
+package dev.avatcher.cinnamon.core.resources.registries;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.resources.CinnamonModule;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
+import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
- * Abstract implementation of {@link CinnamonModule}
+ * Abstract implementation of {@link CinnamonRegistry}
  *
  * @param <T> Type of the resources in the storage
  */
-public abstract class AbstractCinnamonModule<T> implements CinnamonModule<T> {
+public abstract class AbstractCinnamonRegistry<T extends Keyed> implements CinnamonRegistry<T> {
     /**
      * Map where the resources are stored
      */
@@ -29,15 +33,14 @@ public abstract class AbstractCinnamonModule<T> implements CinnamonModule<T> {
      *
      * @param clazz The type of the resources
      */
-    public AbstractCinnamonModule(Class<T> clazz) {
+    public AbstractCinnamonRegistry(Class<T> clazz) {
         this.map = new HashMap<>();
         this.clazz = clazz;
-        this.log = Cinnamon.getInstance().getLogger();
+        this.log = CinnamonPlugin.getInstance().getLogger();
     }
 
-    @Override
-    public Optional<T> get(NamespacedKey key) {
-        return Optional.ofNullable(this.map.get(key));
+    public @Nullable T get(@NotNull NamespacedKey key) {
+        return this.map.get(key);
     }
 
     @Override
@@ -58,5 +61,17 @@ public abstract class AbstractCinnamonModule<T> implements CinnamonModule<T> {
     @Override
     public Collection<T> getValues() {
         return this.map.values();
+    }
+
+
+    @Override
+    public @NotNull Stream<T> stream() {
+        return this.getValues().stream();
+    }
+
+    @NotNull
+    @Override
+    public Iterator<T> iterator() {
+        return this.getValues().iterator();
     }
 }

@@ -1,8 +1,7 @@
 package dev.avatcher.cinnamon.dummy.items;
 
-import dev.avatcher.cinnamon.core.item.ItemBehaviour;
-import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;
-import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.item.events.ItemCreateEventImpl;
+import dev.avatcher.cinnamon.core.item.events.ItemUseEventImpl;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -18,7 +17,7 @@ import java.util.List;
  */
 public class Excalibur implements ItemBehaviour {
     @Override
-    public void onCreate(ItemCreateEvent event) {
+    public void onCreate(ItemCreateEventImpl event) {
         event.getItemStack().editMeta(meta -> {
             meta.lore(List.of(Component.empty()
                     .decoration(TextDecoration.ITALIC, false)
@@ -31,7 +30,7 @@ public class Excalibur implements ItemBehaviour {
     }
 
     @Override
-    public void onUse(@NotNull ItemUseEvent event) {
+    public void onUse(@NotNull ItemUseEventImpl event) {
         Block targetBlock = event.getPlayer().getTargetBlock(null, 50);
         if (targetBlock.getType() != Material.AIR) {
             assert EntityType.LIGHTNING.getEntityClass() != null;

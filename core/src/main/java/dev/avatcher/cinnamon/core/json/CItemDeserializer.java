@@ -1,9 +1,10 @@
 package dev.avatcher.cinnamon.core.json;
 
 import com.google.gson.*;
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.item.CItem;
-import dev.avatcher.cinnamon.core.item.ItemBehaviour;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.api.items.ItemBehaviour;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.item.behaviour.DefaultItemBehaviour;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CustomModelData;
@@ -17,10 +18,10 @@ import java.lang.reflect.Type;
 import java.util.logging.Logger;
 
 /**
- * Deserializer of JSON {@link CItem} instance
+ * Deserializer of JSON {@link CustomItem} instance
  * inside {@link CinnamonResources}
  */
-public class CItemDeserializer implements JsonDeserializer<CItem> {
+public class CItemDeserializer implements JsonDeserializer<CustomItem> {
     /**
      * Owner plugin of the item
      */
@@ -36,13 +37,13 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
      */
     public CItemDeserializer(Plugin plugin) {
         this.plugin = plugin;
-        this.log = Cinnamon.getInstance().getLogger();
+        this.log = CinnamonPlugin.getInstance().getLogger();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public CItem deserialize(JsonElement jsonElement, Type type,
-                             JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+    public CustomItem deserialize(JsonElement jsonElement, Type type,
+                                      JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         JsonObject jObject = jsonElement.getAsJsonObject();
 
         NamespacedKey identifier = new NamespacedKey(plugin, jObject.get("identifier").getAsString());
@@ -50,15 +51,15 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
         CustomModelData model = CustomModelData.of(modelKey)
                 .orElseGet(() -> {
                     log.warning("Couldn't find model '" + modelKey + "' for item " + identifier);
-                    return new CustomModelData(CItem.DEFAULT_MATERIAL.getKey(), 0);
+                    return new CustomModelData(CustomItemImpl.DEFAULT_MATERIAL.getKey(), 0);
                 });
-        Material material = CItem.DEFAULT_MATERIAL;
+        Material material = CustomItemImpl.DEFAULT_MATERIAL;
         if (jObject.has("material")) {
             String materialName = jObject.get("material").getAsString();
             material = Material.matchMaterial(materialName);
             if (material == null) {
                 log.warning("Couldn't find item material: " + materialName);
-                material = CItem.DEFAULT_MATERIAL;
+                material = CustomItemImpl.DEFAULT_MATERIAL;
             }
         }
         Component name = (jObject.get("name").isJsonObject()
@@ -66,7 +67,7 @@ public class CItemDeserializer implements JsonDeserializer<CItem> {
                 : Component.text(jObject.get("name").getAsString()))
                 .decoration(TextDecoration.ITALIC, false);
 
-        CItem cItem = CItem.builder()
+        CustomItemImpl cItem = CustomItemImpl.builder()
                 .identifier(identifier)
                 .model(model)
                 .material(material)

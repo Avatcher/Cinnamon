@@ -1,6 +1,5 @@
 package dev.avatcher.cinnamon.core.item.events;
 
-import dev.avatcher.cinnamon.core.item.ItemBehaviour;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.bukkit.block.Block;
@@ -11,11 +10,11 @@ import org.bukkit.block.BlockFace;
  * player right-clicks upon a block with
  * a custom item in one of the hands
  *
- * @see ItemBehaviour
+ * @see dev.avatcher.cinnamon.api.items.ItemBehaviour
  */
 @Getter
 @SuperBuilder
-public class ItemClickBlockEvent extends ItemUseEvent {
+public class ItemClickBlockEventImpl extends ItemUseEventImpl {
     private Block block;
     private BlockFace blockFace;
 }

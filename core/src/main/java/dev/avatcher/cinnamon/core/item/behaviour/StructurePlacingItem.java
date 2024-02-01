@@ -1,10 +1,10 @@
 package dev.avatcher.cinnamon.core.item.behaviour;
 
-import dev.avatcher.cinnamon.core.Cinnamon;
-import dev.avatcher.cinnamon.core.block.CBlock;
-import dev.avatcher.cinnamon.core.item.ItemBehaviour;
-import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEvent;
-import dev.avatcher.cinnamon.core.item.events.ItemUseEvent;
+import dev.avatcher.cinnamon.api.items.ItemBehaviour;
+import dev.avatcher.cinnamon.api.items.events.ItemUseEvent;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
+import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEventImpl;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -39,8 +39,8 @@ public abstract class StructurePlacingItem implements ItemBehaviour {
      * @param after Runnable to run, if the structure is placed
      */
     public void onUse(@NotNull ItemUseEvent event, Runnable after) {
-        if (!(event instanceof ItemClickBlockEvent blockEvent)
-                || (CBlock.isIntractable(blockEvent.getBlock()) && !event.getPlayer().isSneaking())) return;
+        if (!(event instanceof ItemClickBlockEventImpl blockEvent)
+                || (NoteblockCustomBlock.isIntractable(blockEvent.getBlock()) && !event.getPlayer().isSneaking())) return;
         if (!this.isCooledDown(event.getPlayer())) return;
         this.coolDown(event.getPlayer());
         Location placeLocation = blockEvent.getBlock().getRelative(blockEvent.getBlockFace()).getLocation();
@@ -92,6 +92,6 @@ public abstract class StructurePlacingItem implements ItemBehaviour {
             public void run() {
                 cooldowns.remove(player.getUniqueId());
             }
-        }.runTaskLater(Cinnamon.getInstance(), 1);
+        }.runTaskLater(CinnamonPlugin.getInstance(), 1);
     }
 }

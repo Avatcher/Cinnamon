@@ -1,8 +1,8 @@
 package dev.avatcher.cinnamon.core.block.listeners;
 
-import dev.avatcher.cinnamon.core.block.CBlock;
+import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
-import dev.avatcher.cinnamon.core.item.CItem;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -33,7 +33,7 @@ public class NoteblockListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onNoteblockPlay(@NotNull NotePlayEvent event) {
-        if (CBlock.isRegularNoteblock(event.getBlock())) return;
+        if (NoteblockCustomBlock.isRegularNoteblock(event.getBlock())) return;
         event.setCancelled(true);
     }
 
@@ -52,13 +52,13 @@ public class NoteblockListener implements Listener {
 
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
 
-        Optional<CBlock> customBlock = CBlock.of(block);
-        if (customBlock.isEmpty() || CBlock.isRegularNoteblock(block)) return;
+        Optional<NoteblockCustomBlock> customBlock = NoteblockCustomBlock.of(block);
+        if (customBlock.isEmpty() || NoteblockCustomBlock.isRegularNoteblock(block)) return;
 
-        Optional<CItem> customItem = CItem.of(customBlock.get().getIdentifier());
+        Optional<CustomItem> customItem = CustomItem.get(customBlock.get().getIdentifier());
         if (customItem.isEmpty()) return;
 
-        ItemStack drop = customItem.get().getItemStack();
+        ItemStack drop = customItem.get().createItemStack();
         event.setDropItems(false);
         block.getWorld().dropItemNaturally(block.getLocation(), drop);
     }
@@ -84,7 +84,7 @@ public class NoteblockListener implements Listener {
         itemstack = player.getInventory().getItemInMainHand();
         if (itemstack.getType() == Material.AIR) return;
 
-        if (!CItem.isCustom(itemstack) && itemstack.getType().isBlock()) {
+        if (!CustomItem.isCustom(itemstack) && itemstack.getType().isBlock()) {
             Block placeBlock = event.getClickedBlock().getRelative(event.getBlockFace());
             if (!placeBlock.getWorld().getNearbyLivingEntities(placeBlock.getLocation().toCenterLocation(),
                     .5, .5, .5).isEmpty()) return;

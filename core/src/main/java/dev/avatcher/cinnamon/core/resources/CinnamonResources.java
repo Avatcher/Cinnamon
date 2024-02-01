@@ -1,6 +1,5 @@
 package dev.avatcher.cinnamon.core.resources;
 
-import dev.avatcher.cinnamon.core.item.CItem;
 import org.bukkit.plugin.Plugin;
 
 import java.io.Closeable;
@@ -14,24 +13,31 @@ public interface CinnamonResources extends Closeable {
      * Default path to configuration file
      */
     String CONFIG_FILE = "cinnamon-resources.yml";
+
     /**
      * Default path to folder with custom items
      *
-     * @see CItem
+     * @see dev.avatcher.cinnamon.api.items.CustomItem
      */
     String ITEMS_FOLDER = "items/";
+
     /**
      * Default path to folder with custom blocks
+     *
+     * @see dev.avatcher.cinnamon.api.blocks.CustomBlock
      */
     String BLOCKS_FOLDER = "blocks/";
+
     /**
      * Default path to folder with resource pack assets
      */
     String ASSETS_FOLDER = "assets/";
+
     /**
      * Default path to folder with item models inside {@value #ASSETS_FOLDER}
      */
     String MODELS_FOLDER = "models/";
+
     /**
      * Default path to folder with recipes
      */
