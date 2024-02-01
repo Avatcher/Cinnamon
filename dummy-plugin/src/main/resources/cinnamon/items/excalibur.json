@@ -3,5 +3,5 @@
   "material": "iron_sword",
   "model": "cdummy:item/excalibur",
   "name": { "translation": "item.cdummy.excalibur" },
-  "class": "dev.avatcher.cdummy.items.Excalibur"
+  "class": "dev.avatcher.cinnamon.dummy.items.Excalibur"
 }

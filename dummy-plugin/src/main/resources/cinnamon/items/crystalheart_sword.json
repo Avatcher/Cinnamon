@@ -3,5 +3,5 @@
   "material": "minecraft:diamond_sword",
   "model": "cdummy:item/crystalheart_sword",
   "name": { "translation": "item.cdummy.crystalheart_sword" },
-  "class": "dev.avatcher.cdummy.items.CrystalheartSword"
+  "class": "dev.avatcher.cinnamon.dummy.items.CrystalheartSword"
 }

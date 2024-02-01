@@ -1,4 +1,4 @@
-package dev.avatcher.cdummy.items;
+package dev.avatcher.cinnamon.dummy.items;
 
 import dev.avatcher.cinnamon.core.item.ItemBehaviour;
 import dev.avatcher.cinnamon.core.item.events.ItemCreateEvent;

@@ -1,4 +1,4 @@
-package dev.avatcher.cdummy;
+package dev.avatcher.cinnamon.dummy;
 
 import dev.avatcher.cinnamon.core.Cinnamon;
 import org.bukkit.plugin.java.JavaPlugin;
