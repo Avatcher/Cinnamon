@@ -92,9 +92,7 @@ public class CrystalheartSword extends AbstractStructurePlacingItem {
         if (location.getBlock().getType() != BLOCK_MATERIAL) return;
         location.getBlock().setType(Material.AIR);
         this.playEffectsAt(location);
-        if (!placedBlocks.get(playerUUID).remove(location)) {
-            System.out.println("Could not remove location");
-        }
+        placedBlocks.get(playerUUID).remove(location);
     }
 
     private void playEffectsAt(Location location) {

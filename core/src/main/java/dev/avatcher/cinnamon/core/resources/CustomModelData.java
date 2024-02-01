@@ -45,7 +45,6 @@ public record CustomModelData(NamespacedKey identifier, int numeric) implements 
                 Material.STICK,
                 Material.BLAZE_ROD
         );
-
         List<String> toolMaterials = List.of("WOODEN", "STONE", "IRON", "GOLDEN", "DIAMOND", "NETHERITE");
         List<String> toolNames     = List.of("SWORD", "PICKAXE", "AXE", "SHOVEL", "HOE");
         List<Material> tools = toolMaterials.stream()
@@ -54,12 +53,9 @@ public record CustomModelData(NamespacedKey identifier, int numeric) implements 
                         .map(Material::getMaterial)
                 )
                 .toList();
-
         HANDHELD_ITEMS = Stream.of(handheldItems, tools)
                 .flatMap(Collection::stream)
                 .toList();
-
-        HANDHELD_ITEMS.forEach(System.out::println);
     }
 
     /**
