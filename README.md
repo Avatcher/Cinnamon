@@ -1,34 +1,42 @@
 > [!WARNING]
-> This project is on the early stage of development. Many features are not implemented.
+> This project is in early stage of development.
+> Its use in production is not recommended.
+
+<div align="center">
+  <img alt="Cinnamon banner" src=".github/docs/pictures/cinnamon-banner.svg">
+  <br/>
+  <img alt="MIT License badge" src="https://img.shields.io/badge/License-MIT-blue">
+</div>
+
+# Overview
+- [What is Cinnamon?](#what-is-cinnamon)
+- [Building Cinnamon](#building-cinnamon)
 
 
-# Cinnamon [![License](https://img.shields.io/badge/License-MIT-blue)](./LICENSE)
-Cinnamon is a [PaperMC](https://papermc.io/) framework for easier development of extended vanilla experience!
+# What is Cinnamon?
+Cinnamon is a framework for [PaperMC](https://papermc.io/), which tries to allow
+developers code "extended vanilla" experience, providing tools
+for easier management of resource packs, creation of custom items
+and even own custom blocks all in vanilla Minecraft!
 
-# Todo
-- [ ] Resources management
-  - [X] Reading resources from other plugin
-  - [X] Items registration
-  - [X] CustomModelData reservation
-  - [ ] Noteblock tune reservation
-  - [X] Resource packs merge
-  - [X] Resource pack transmitting
-- [ ] Custom items
-  - [X] Deserialization from JSON
-  - [ ] Events for [CItemBehaviour](./src/main/java/dev/avatcher/cinnamon/item/CItemBehaviour.java)
-    - [ ] Right click
-    - [ ] Left click
-    - [ ] Entity hurt
-    - [ ] Entity killed
-    - [ ] Crafted
-    - [ ] Dropped
-    - [ ] Picked up
-    - [ ] Switched in hand
-    - [ ] Moved inside inventory
-    - [ ] More...?
-- [ ] Custom blocks
-  - [ ] Fixed noteblocks
-  - [ ] Sounds & effects
-  - [ ] Breaking speed
-  - [ ] Custom item for placing blocks
-  - [ ] Loot
+
+# Building Cinnamon
+Cinnamon has three modules: `:core`, `:api` and `:dummy-plugin`
+
+- `:core` contains code of the Cinnamon plugin itself.
+- `:api` contains the code of Cinnamon API. Cinnamon's core
+  shades API in its own jar.
+- `:dummy-plugin` contains the code of a "dummy" plugin, that utilizes
+  Cinnamon API. It is a good example, if you want to see Cinnamon in
+  live use.
+
+To build the Cinnamon, run the next commands:
+```shell
+git clone https://github.com/Avatcher/Cinnamon.git
+gradle build
+```
+
+Built jar locations:
+- **Plugin**: `core/build/libs/cinnamon-${VERSION}.jar`
+- **API**: `api/build/libs/cinnamon-api-${VERSION}.jar`
+- **Dummy plugin**: `dummy-plugin/build/libs/cinnamon-dummy-${VERSION}.jar`
