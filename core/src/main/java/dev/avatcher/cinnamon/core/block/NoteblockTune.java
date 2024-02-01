@@ -66,7 +66,6 @@ public record NoteblockTune(NamespacedKey key, byte note, byte instrument) imple
      */
     public @NotNull String getInstrumentMcString() {
         String soundName = this.getInstrument().getSound().name().toLowerCase();
-        System.out.println("s: " + soundName);
         return soundName.substring(soundName.lastIndexOf("_") + 1);
     }
 
