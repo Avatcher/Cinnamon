@@ -129,7 +129,7 @@ public class NoteblockCustomBlock implements CustomBlock {
      * @return {@code true}, if player can right-click
      *         the block for interaction
      */
-    public static boolean isIntractable(Block block) {
+    public static boolean isInteractable(Block block) {
         if (INTRACTABLE_BLOCKS.contains(block.getType())) {
             return true;
         }

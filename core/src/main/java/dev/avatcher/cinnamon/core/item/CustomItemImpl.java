@@ -2,10 +2,10 @@ package dev.avatcher.cinnamon.core.item;
 
 import dev.avatcher.cinnamon.api.items.CustomItem;
 import dev.avatcher.cinnamon.api.items.ItemBehaviour;
+import dev.avatcher.cinnamon.api.items.behaviour.AbstractStructurePlacingItem;
 import dev.avatcher.cinnamon.api.items.events.ItemCreateEvent;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.item.behaviour.DefaultItemBehaviour;
-import dev.avatcher.cinnamon.core.item.behaviour.StructurePlacingItem;
 import dev.avatcher.cinnamon.core.item.events.ItemCreateEventImpl;
 import dev.avatcher.cinnamon.core.item.exceptions.CustomItemException;
 import dev.avatcher.cinnamon.core.resources.CustomModelData;
@@ -86,7 +86,7 @@ public class CustomItemImpl implements CustomItem {
      * Examples:
      * <ul>
      *     <li>{@link DefaultItemBehaviour} describes behaviour without any effects.</li>
-     *     <li>{@link StructurePlacingItem} describes
+     *     <li>{@link AbstractStructurePlacingItem} describes
      *     block item behaviour, allowing to place it with right click.
      *     </li>
      * </ul>

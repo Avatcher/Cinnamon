@@ -15,6 +15,10 @@ public interface CustomBlock extends Keyed {
         return Cinnamon.getInstance().getCustomBlocks().isCustom(block);
     }
 
+    static boolean isInteractable(Block block) {
+        return Cinnamon.getInstance().getCustomBlocks().isInteractable(block);
+    }
+
     static Optional<CustomBlock> get(NamespacedKey key) {
         return Optional.ofNullable(Cinnamon.getInstance().getCustomBlocks().get(key));
     }

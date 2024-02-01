@@ -1,5 +1,6 @@
 package dev.avatcher.cinnamon.core.item.events;
 
+import dev.avatcher.cinnamon.api.items.events.ItemClickBlockEvent;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.bukkit.block.Block;
@@ -14,7 +15,7 @@ import org.bukkit.block.BlockFace;
  */
 @Getter
 @SuperBuilder
-public class ItemClickBlockEventImpl extends ItemUseEventImpl {
+public class ItemClickBlockEventImpl extends ItemUseEventImpl implements ItemClickBlockEvent {
     private Block block;
     private BlockFace blockFace;
 }

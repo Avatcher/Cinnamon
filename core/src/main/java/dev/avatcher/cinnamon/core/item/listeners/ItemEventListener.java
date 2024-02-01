@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.core.item.listeners;
 
 import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.api.items.events.ItemUseEvent;
 import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.item.events.ItemClickBlockEventImpl;
 import dev.avatcher.cinnamon.core.item.events.ItemUseEventImpl;
@@ -66,7 +67,7 @@ public class ItemEventListener implements Listener {
         if (!event.hasItem() || !CustomItem.isCustom(event.getItem())) return;
         CustomItem customItem = CustomItem.get(event.getItem()).orElseThrow();
 
-        ItemUseEventImpl itemEvent = null;
+        ItemUseEvent itemEvent = null;
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             itemEvent = ItemClickBlockEventImpl.builder()
                     .itemStack(event.getItem())

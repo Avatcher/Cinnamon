@@ -5,10 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import dev.avatcher.cinnamon.api.blocks.CustomBlock;
 import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
+import dev.avatcher.cinnamon.api.items.behaviour.CustomBlockPlacingItem;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
 import dev.avatcher.cinnamon.core.item.CustomItemImpl;
-import dev.avatcher.cinnamon.core.item.behaviour.CustomBlockPlacingItem;
 import dev.avatcher.cinnamon.core.json.CBlockDeserializer;
 import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
@@ -92,7 +92,7 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                         this.register(customBlock.getIdentifier(), customBlock);
                         if (request.isItemRequested()) {
                             NamespacedKey modelKey = new NamespacedKey(customBlock.getIdentifier().getNamespace(), "block/" + customBlock.getIdentifier().getKey());
-                            CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(customBlock);
+                            CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(resources.getPlugin(), customBlock);
                             CustomItemImpl item = CustomItemImpl.builder()
                                     .identifier(customBlock.getIdentifier())
                                     .name(Component.translatable("block." + customBlock.getIdentifier().getNamespace() + "." + customBlock.getIdentifier().getKey())
@@ -111,6 +111,11 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
     @Override
     public boolean isCustom(Block block) {
         return NoteblockCustomBlock.isCustom(block);
+    }
+
+    @Override
+    public boolean isInteractable(Block block) {
+        return NoteblockCustomBlock.isInteractable(block);
     }
 
     /**
