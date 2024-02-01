@@ -14,11 +14,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * Abstract implementation of {@link CooldownItem}
  */
 public abstract class AbstractCooldownItem implements CooldownItem {
+    /**
+     * UUID's of players put under cooldown
+     */
     private final Set<UUID> cooldowns = ConcurrentHashMap.newKeySet();
 
     @Getter
     private final Plugin plugin;
 
+    /**
+     * Creates a new cooldown item belonging
+     * to a certain plugin.
+     *
+     * @param plugin Plugin owning the item
+     */
     public AbstractCooldownItem(Plugin plugin) {
         this.plugin = plugin;
     }

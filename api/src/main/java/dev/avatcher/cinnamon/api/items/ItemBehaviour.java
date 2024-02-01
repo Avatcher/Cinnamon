@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Behaviour of a custom item
+ *
+ * @see CustomItem
  */
 public interface ItemBehaviour {
     /**

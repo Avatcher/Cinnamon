@@ -4,6 +4,10 @@ import dev.avatcher.cinnamon.api.items.events.ItemClickBlockEvent;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A behaviour of custom item, placing a
+ * structure on its usage.
+ */
 public interface StructurePlacingItem extends CooldownItem {
     /**
      * Checks, if it is possible to place a structure

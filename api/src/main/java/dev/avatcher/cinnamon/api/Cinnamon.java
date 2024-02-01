@@ -1,26 +1,21 @@
 package dev.avatcher.cinnamon.api;
 
 import com.google.common.base.Preconditions;
+import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
 /**
  * Cinnamon API
  */
 public final class Cinnamon {
+    /**
+     * Instance of the Cinnamon API.
+     */
+    @Getter
     private static CinnamonAPI instance;
 
     /**
-     * Gets instance of the Cinnamon API
-     *
-     * @return {@code null}, if Cinnamon API is not
-     *         yet assigned
-     */
-    public static CinnamonAPI getInstance() {
-        return instance;
-    }
-
-    /**
-     * Sets the instance of the Cinnamon API
+     * Sets the instance of the Cinnamon API.
      *
      * @param cinnamon Cinnamon instance
      * @throws IllegalStateException If Cinnamon API is already assigned
@@ -30,6 +25,11 @@ public final class Cinnamon {
         instance = cinnamon;
     }
 
+    /**
+     * Loads Cinnamon resources of a certain plugin.
+     *
+     * @param plugin Plugin containing Cinnamon resources
+     */
     public static void load(Plugin plugin) {
         instance.load(plugin);
     }

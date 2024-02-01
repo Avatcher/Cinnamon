@@ -11,6 +11,12 @@ import org.jetbrains.annotations.NotNull;
  * An abstract implementation of {@link StructurePlacingItem}
  */
 public abstract class AbstractStructurePlacingItem extends AbstractCooldownItem implements StructurePlacingItem {
+    /**
+     * Creates a structure placing item
+     * belonging to certain plugin.
+     *
+     * @param plugin Plugin owning the item
+     */
     public AbstractStructurePlacingItem(Plugin plugin) {
         super(plugin);
     }
@@ -28,6 +34,7 @@ public abstract class AbstractStructurePlacingItem extends AbstractCooldownItem 
         }
     }
 
+    @Override
     public boolean isPlaceableLocation(Location location) {
         return location.getBlock().isReplaceable()
                 && location.toCenterLocation().getNearbyEntities(.5, .5, .5).isEmpty();

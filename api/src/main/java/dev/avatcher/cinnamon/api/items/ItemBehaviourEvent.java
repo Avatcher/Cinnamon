@@ -4,16 +4,19 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Representation of an event of a custom item
+ * Event passed to {@link ItemBehaviour} methods,
+ * representing different events happening to
+ * custom items.
  *
- * @see dev.avatcher.cinnamon.api.items.ItemBehaviour
+ * @see ItemBehaviour
+ * @see CustomItem
  */
 public interface ItemBehaviourEvent {
     /**
-     * Gets the itemstack of the custom item,
-     * involved in this event.
+     * Gets the itemstack of the custom item
+     * involved in the event.
      *
-     * @return Itemstack of custom item
+     * @return Custom item stack
      */
     @NotNull ItemStack getItemStack();
 }
