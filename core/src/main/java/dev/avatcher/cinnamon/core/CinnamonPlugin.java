@@ -13,7 +13,7 @@ import dev.avatcher.cinnamon.core.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.core.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CinnamonResourcesManager;
-import dev.avatcher.cinnamon.core.resources.ResourcepackServer;
+import dev.avatcher.cinnamon.core.resources.ResourcepackServerImpl;
 import dev.avatcher.cinnamon.core.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
@@ -29,11 +29,12 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.*;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -56,7 +57,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      * Http server for sending resourcepack
      */
     @Getter
-    private ResourcepackServer resourcepackServer;
+    private ResourcepackServerImpl resourcepackServer;
 
     /**
      * Loads Cinnamon resources from plugin's jar
@@ -124,14 +125,31 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
             Cinnamon.setInstance(this);
         }
 
-        // Runs code AFTER all the plugins are loaded
-        this.getServer().getScheduler().scheduleSyncDelayedTask(this, this::initializeResourcepackServer);
+        this.getServer().getScheduler().scheduleSyncDelayedTask(this, this::afterAllPluginsEnabled);
     }
 
     @Override
     public void onDisable() {
         CommandAPI.onDisable();
-        this.resourcepackServer.stop();
+        if (this.resourcepackServer != null) {
+            this.resourcepackServer.stop();
+        }
+        if (this.resourcesManager.getResourcePackBuilder() != null) {
+            try {
+                this.resourcesManager.getResourcePackBuilder().clear();
+            } catch (IOException e) {
+                log.log(Level.WARNING, "An exception occurred while clearing resourcepack.", e);
+            }
+        }
+    }
+
+    public void afterAllPluginsEnabled() {
+        try {
+            this.resourcesManager.getResourcePackBuilder().build();
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "An exception occurred while building the resource pack", e);
+        }
+        this.initializeResourcepackServer();
     }
 
     /**
@@ -158,7 +176,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
     /**
      * Initializes and starts resourcepack transmitting server
      *
-     * @see ResourcepackServer
+     * @see ResourcepackServerImpl
      */
     private void initializeResourcepackServer() {
         boolean active;
@@ -178,42 +196,20 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
                     ? Component.text("Please install our resourcepack. It is required for a better server experience.")
                     .color(NamedTextColor.YELLOW)
                     : JSONComponentSerializer.json().deserialize(messageJson);
-            this.resourcepackServer = new ResourcepackServer(port, url, message);
+            this.resourcepackServer = new ResourcepackServerImpl(port, url, message);
             this.registerEvents(this.resourcepackServer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.log(Level.SEVERE, "An exception occurred while initializing the resourcepack transmitting server.", e);
+            return;
         }
-
-        Path zipPath = CinnamonPlugin.getInstance().getDataFolder().toPath()
-                .resolve("resourcepack.zip");
-        Path resourcepack = CinnamonPlugin.getInstance().getDataFolder().toPath()
-                .resolve(CinnamonResourcesManager.RESOURCE_PACK_FOLDER);
         try {
-            if (!Files.exists(resourcepack)) {
-                log.warning("Resourcepack is empty. Transmitting server is not started");
-                return;
-            }
-            Files.deleteIfExists(zipPath);
-            try (FileSystem fs = FileSystems.newFileSystem(zipPath, Map.of("create", "true"));
-                 var walker = Files.walk(resourcepack)) {
-                walker.filter(Files::isRegularFile)
-                        .forEach(file -> {
-                            Path relative = resourcepack.relativize(file);
-                            Path inZip = fs.getPath(relative.toString());
-                            try {
-                                Files.createDirectories(inZip.resolve(".."));
-                                Files.copy(file, inZip, StandardCopyOption.REPLACE_EXISTING);
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        });
-                log.info("Created resourcepack's zip");
-            }
-            byte[] resourcePack = Files.readAllBytes(zipPath);
-            this.resourcepackServer.setResourcePack(resourcePack);
-            if (active) this.resourcepackServer.start();
+            byte[] resourcePack = this.resourcesManager.getResourcePackBuilder().buildZip();
+            Path zipPath = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve("resourcepack.zip");
+            Files.write(zipPath, resourcePack, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            this.resourcepackServer.setResourcepackBytes(resourcePack);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            log.log(Level.SEVERE, "An exception occurred while building resource pack's Zip archive.", e);
         }
+        if (active) this.resourcepackServer.start();
     }
 }
