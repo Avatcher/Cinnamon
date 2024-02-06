@@ -107,7 +107,7 @@ public class ResourcepackServerImpl implements ResourcepackServer, HttpHandler, 
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (this.active) {
-            player.setResourcePack(this.url.toString(), this.resourcepackSHA1, this.message, true);
+            this.applyTo(event.getPlayer());
             return;
         }
         if (player.isOp()) {
