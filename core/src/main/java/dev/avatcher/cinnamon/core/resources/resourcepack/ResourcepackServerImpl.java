@@ -1,4 +1,4 @@
-package dev.avatcher.cinnamon.core.resources;
+package dev.avatcher.cinnamon.core.resources.resourcepack;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;

@@ -3,6 +3,7 @@ package dev.avatcher.cinnamon.core.resources;
 import dev.avatcher.cinnamon.api.items.CustomItem;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.resources.registries.*;
+import dev.avatcher.cinnamon.core.resources.resourcepack.ResourcePackBuilder;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;

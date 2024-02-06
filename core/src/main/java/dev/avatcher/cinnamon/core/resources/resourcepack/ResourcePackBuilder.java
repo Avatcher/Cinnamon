@@ -1,10 +1,12 @@
-package dev.avatcher.cinnamon.core.resources;
+package dev.avatcher.cinnamon.core.resources.resourcepack;
 
 import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.api.Cinnamon;
 import dev.avatcher.cinnamon.api.items.CustomItem;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
+import dev.avatcher.cinnamon.core.resources.CinnamonResources;
+import dev.avatcher.cinnamon.core.resources.CustomModelData;
 import lombok.Getter;
 import org.bukkit.Material;
 

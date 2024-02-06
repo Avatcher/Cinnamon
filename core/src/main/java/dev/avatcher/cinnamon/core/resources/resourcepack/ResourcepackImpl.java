@@ -1,4 +1,4 @@
-package dev.avatcher.cinnamon.core.resources;
+package dev.avatcher.cinnamon.core.resources.resourcepack;
 
 import dev.avatcher.cinnamon.api.resources.Resourcepack;
 import net.kyori.adventure.text.Component;

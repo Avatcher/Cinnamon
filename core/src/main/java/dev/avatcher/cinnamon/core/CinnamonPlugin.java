@@ -13,7 +13,7 @@ import dev.avatcher.cinnamon.core.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.core.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CinnamonResourcesManager;
-import dev.avatcher.cinnamon.core.resources.ResourcepackServerImpl;
+import dev.avatcher.cinnamon.core.resources.resourcepack.ResourcepackServerImpl;
 import dev.avatcher.cinnamon.core.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
