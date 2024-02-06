@@ -1,5 +1,4 @@
 rootProject.name = 'cinnamon'
-include 'core'
-include 'dummy-plugin'
-include 'api'
-
+include 'cinnamon'
+include 'cinnamon-api'
+include 'cinnamon-dummy'
