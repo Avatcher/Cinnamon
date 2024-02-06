@@ -80,6 +80,11 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      */
     public void load(CinnamonResources resources) {
         instance.getResourcesManager().load(resources);
+        try {
+            resources.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
