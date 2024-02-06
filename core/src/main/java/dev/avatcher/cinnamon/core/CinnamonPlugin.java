@@ -13,7 +13,7 @@ import dev.avatcher.cinnamon.core.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.core.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CinnamonResourcesManager;
-import dev.avatcher.cinnamon.core.resources.ResourcepackServer;
+import dev.avatcher.cinnamon.core.resources.ResourcepackServerImpl;
 import dev.avatcher.cinnamon.core.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
@@ -57,7 +57,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      * Http server for sending resourcepack
      */
     @Getter
-    private ResourcepackServer resourcepackServer;
+    private ResourcepackServerImpl resourcepackServer;
 
     /**
      * Loads Cinnamon resources from plugin's jar
@@ -176,7 +176,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
     /**
      * Initializes and starts resourcepack transmitting server
      *
-     * @see ResourcepackServer
+     * @see ResourcepackServerImpl
      */
     private void initializeResourcepackServer() {
         boolean active;
@@ -196,7 +196,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
                     ? Component.text("Please install our resourcepack. It is required for a better server experience.")
                     .color(NamedTextColor.YELLOW)
                     : JSONComponentSerializer.json().deserialize(messageJson);
-            this.resourcepackServer = new ResourcepackServer(port, url, message);
+            this.resourcepackServer = new ResourcepackServerImpl(port, url, message);
             this.registerEvents(this.resourcepackServer);
         } catch (IOException e) {
             log.log(Level.SEVERE, "An exception occurred while initializing the resourcepack transmitting server.", e);
@@ -204,9 +204,9 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
         }
         try {
             byte[] resourcePack = this.resourcesManager.getResourcePackBuilder().buildZip();
-            Path zipPath = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve("Resourcepack.zip");
+            Path zipPath = CinnamonPlugin.getInstance().getDataFolder().toPath().resolve("resourcepack.zip");
             Files.write(zipPath, resourcePack, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            this.resourcepackServer.setResourcePack(resourcePack);
+            this.resourcepackServer.setResourcepackBytes(resourcePack);
         } catch (IOException e) {
             log.log(Level.SEVERE, "An exception occurred while building resource pack's Zip archive.", e);
         }

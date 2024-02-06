@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.api;
 
 import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
 import dev.avatcher.cinnamon.api.items.CustomItemsRegistry;
+import dev.avatcher.cinnamon.api.resources.ResourcepackServer;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -28,4 +29,12 @@ public interface CinnamonAPI {
      * @return Custom blocks registry
      */
     CustomBlocksRegistry getCustomBlocks();
+
+    /**
+     * Gets HTTP server responsible for transmitting
+     * the resourcepack.
+     *
+     * @return Resourcepack transmitting server
+     */
+    ResourcepackServer getResourcepackServer();
 }

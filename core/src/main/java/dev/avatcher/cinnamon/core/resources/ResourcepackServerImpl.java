@@ -4,6 +4,8 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import dev.avatcher.cinnamon.api.resources.Resourcepack;
+import dev.avatcher.cinnamon.api.resources.ResourcepackServer;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +38,7 @@ import java.util.logging.Logger;
  * Http server responsible for transmitting Cinnamon
  * resourcepack to players
  */
-public class ResourcepackServer implements HttpHandler, Listener {
+public class ResourcepackServerImpl implements ResourcepackServer, HttpHandler, Listener {
     private final Logger log;
     private final ExecutorService executor;
     private final HttpServer server;
@@ -46,21 +48,21 @@ public class ResourcepackServer implements HttpHandler, Listener {
     @Getter
     private boolean active;
     @Getter
-    private byte[] resourcePack;
+    private byte[] resourcepackBytes;
     @Getter
-    private byte[] resourcePackSHA1;
+    private byte[] resourcepackSHA1;
     @Getter
     @Setter
     private Component message;
 
     /**
-     * Creates a {@link ResourcepackServer}.
+     * Creates a {@link ResourcepackServerImpl}.
      *
      * @param port The port of the http server
      * @param url URL link to download the resourcepack
      * @param message Message for when player is suggested to install resourcepack
      */
-    public ResourcepackServer(int port, @Nullable URL url, Component message) throws IOException {
+    public ResourcepackServerImpl(int port, @Nullable URL url, Component message) throws IOException {
         this.log = CinnamonPlugin.getInstance().getLogger();
 
         this.url = url == null
@@ -71,7 +73,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
         this.server.setExecutor(this.executor);
         this.server.createContext("/", this);
 
-        this.setResourcePack(resourcePack);
+        this.setResourcepackBytes(resourcepackBytes);
         this.message = message;
     }
 
@@ -87,9 +89,9 @@ public class ResourcepackServer implements HttpHandler, Listener {
         headers.set("Content-Type", "application/zip");
         headers.set("Content-Disposition", "attachment; filename=\"resourcepack.zip\"");
         headers.set("Content-Transfer-Encoding", "binary");
-        exchange.sendResponseHeaders(200, this.resourcePack.length);
+        exchange.sendResponseHeaders(200, this.resourcepackBytes.length);
         try (var out = exchange.getResponseBody()) {
-            out.write(this.resourcePack);
+            out.write(this.resourcepackBytes);
         }
         exchange.close();
 
@@ -105,7 +107,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
     public void onPlayerJoin(@NotNull PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (this.active) {
-            player.setResourcePack(this.url.toString(), this.resourcePackSHA1, this.message, true);
+            player.setResourcePack(this.url.toString(), this.resourcepackSHA1, this.message, true);
             return;
         }
         if (player.isOp()) {
@@ -116,20 +118,20 @@ public class ResourcepackServer implements HttpHandler, Listener {
     }
 
     /**
-     * Sets {@link #resourcePack} and calculates its SHA1 hash.
+     * Sets {@link #resourcepackBytes} and calculates its SHA1 hash.
      *
-     * @param resourcePack Resourcepack
+     * @param resourcepackBytes Resourcepack
      */
-    public void setResourcePack(byte[] resourcePack) {
-        if (Arrays.equals(this.resourcePack, resourcePack)) return;
-        this.resourcePack = resourcePack;
+    public void setResourcepackBytes(byte[] resourcepackBytes) {
+        if (Arrays.equals(this.resourcepackBytes, resourcepackBytes)) return;
+        this.resourcepackBytes = resourcepackBytes;
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA1");
-            this.resourcePackSHA1 = digest.digest(this.resourcePack);
+            this.resourcepackSHA1 = digest.digest(this.resourcepackBytes);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        log.info("Provided resourcepack of size " + this.getSizeString(this.resourcePack.length) + " to transmitting server");
+        log.info("Provided resourcepack of size " + this.getSizeString(this.resourcepackBytes.length) + " to transmitting server");
         log.info("Resourcepack URL: " + this.url);
         log.info("Resourcepack SHA1: " + this.getResourcepackSHA1String());
     }
@@ -152,6 +154,11 @@ public class ResourcepackServer implements HttpHandler, Listener {
                 .anyMatch(exchangeAddress::equals);
     }
 
+    @Override
+    public boolean isStarted() {
+        return this.active;
+    }
+
     /**
      * Starts transmission of the resourcepack.
      */
@@ -171,6 +178,26 @@ public class ResourcepackServer implements HttpHandler, Listener {
         this.active = false;
     }
 
+    @Override
+    public void applyTo(Player player) {
+        this.applyTo(player, this.getMessage());
+    }
+
+    @Override
+    public void applyTo(Player player, Component message) {
+        player.setResourcePack(this.getDownloadLink().toString(), this.getResourcepackSHA1(), message, true);
+    }
+
+    @Override
+    public URL getDownloadLink() {
+        return this.url;
+    }
+
+    @Override
+    public Resourcepack getResourcepack() {
+        return new ResourcepackImpl(this);
+    }
+
     /**
      * Gets resourcepack's SHA1 code as a string.
      *
@@ -178,7 +205,7 @@ public class ResourcepackServer implements HttpHandler, Listener {
      */
     public String getResourcepackSHA1String() {
         Formatter formatter = new Formatter();
-        for (byte b : this.resourcePackSHA1) {
+        for (byte b : this.resourcepackSHA1) {
             formatter.format("%02x", b);
         }
         return formatter.toString();

@@ -5,6 +5,7 @@ import dev.avatcher.cinnamon.api.Cinnamon;
 import dev.avatcher.cinnamon.api.items.CustomItem;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
+import lombok.Getter;
 import org.bukkit.Material;
 
 import java.io.IOException;
@@ -46,9 +47,17 @@ public class ResourcePackBuilder {
         }
     }
 
+    @Getter
     private final Path outFolder;
+    @Getter
     private final Path outAssets;
 
+    /**
+     * Creates a new resourcepack builder,
+     * building a pack at given location.
+     *
+     * @param outFolder Folder to build the resourcepack in
+     */
     public ResourcePackBuilder(Path outFolder) throws IOException {
         Preconditions.checkNotNull(outFolder);
         this.outFolder = outFolder;
@@ -57,9 +66,14 @@ public class ResourcePackBuilder {
         Files.createDirectories(outFolder);
     }
 
+    /**
+     * Adds assets from given cinnamon resources
+     * into the resourcepack.
+     *
+     * @param resources Resources containing assets
+     */
     public void registerAssets(CinnamonResources resources) throws IOException {
         Path assets = resources.getAssetsFolder();
-
         try (var walker = Files.walk(assets)) {
             walker.filter(Files::isRegularFile).forEach(file -> {
                 String relative = assets.relativize(file).toString();
@@ -74,6 +88,10 @@ public class ResourcePackBuilder {
         }
     }
 
+    /**
+     * Builds resourcepack generating
+     * all the necessary files.
+     */
     public void build() throws IOException {
         Preconditions.checkNotNull(this.outFolder);
 
@@ -82,6 +100,12 @@ public class ResourcePackBuilder {
         this.buildPackMeta();
     }
 
+    /**
+     * Builds a .zip archive of the resourcepack
+     * and returns it as an array of bytes.
+     *
+     * @return Bytes of .zip archive
+     */
     public byte[] buildZip() throws IOException {
         Path zipFile = Files.createTempFile("cinnamon", "resourcepack.zip");
         Files.deleteIfExists(zipFile);
@@ -104,6 +128,9 @@ public class ResourcePackBuilder {
         return zipArchive;
     }
 
+    /**
+     * Deletes previously generated resourcepack files.
+     */
     public void clear() throws IOException {
         if (!Files.exists(this.outAssets)) return;
         Files.walkFileTree(this.outAssets, new SimpleFileVisitor<>(){
@@ -121,6 +148,12 @@ public class ResourcePackBuilder {
         });
     }
 
+    /**
+     * Builds item JSON models for custom items
+     * containing their CustomModelData values.
+     *
+     * @see CustomModelData
+     */
     private void buildItemModelOverrides() {
         Cinnamon.getInstance().getCustomItems().stream()
                 .map(CustomItem::getMaterial)
@@ -134,6 +167,12 @@ public class ResourcePackBuilder {
                 });
     }
 
+    /**
+     * Builds item JSON models for a certain item material
+     * containing its CustomModelData values.
+     *
+     * @see CustomModelData
+     */
     private void buildItemModelOverrides(Material material) throws IOException {
         Path modelOverridesPath = this.outAssets
                 .resolve("minecraft/models/item/")
@@ -156,6 +195,10 @@ public class ResourcePackBuilder {
         Files.writeString(modelOverridesPath, modelOverrides);
     }
 
+    /**
+     * Builds blocks JSON models overriding their
+     * models depending on their blockstate.
+     */
     private void buildBlockModelOverrides() throws IOException {
         Path modelOverridesPath = this.outAssets.resolve("minecraft/blockstates/note_block.json");
         Files.createDirectories(modelOverridesPath.resolve(".."));
@@ -174,6 +217,10 @@ public class ResourcePackBuilder {
         Files.writeString(modelOverridesPath, modelOverrides);
     }
 
+    /**
+     * Adds a default pack.mcmeta file,
+     * if it does not exist.
+     */
     private void buildPackMeta() throws IOException {
         Path packMeta = outFolder.resolve("pack.mcmeta");
         if (Files.exists(packMeta)) return;
