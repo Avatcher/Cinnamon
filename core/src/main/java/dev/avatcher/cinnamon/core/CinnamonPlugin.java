@@ -1,6 +1,5 @@
 package dev.avatcher.cinnamon.core;
 
-import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.api.Cinnamon;
 import dev.avatcher.cinnamon.api.CinnamonAPI;
 import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
@@ -13,14 +12,12 @@ import dev.avatcher.cinnamon.core.exceptions.CinnamonRuntimeException;
 import dev.avatcher.cinnamon.core.item.listeners.ItemEventListener;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
 import dev.avatcher.cinnamon.core.resources.CinnamonResourcesManager;
+import dev.avatcher.cinnamon.core.resources.resourcepack.ResourcepackServerConfig;
 import dev.avatcher.cinnamon.core.resources.resourcepack.ResourcepackServerImpl;
 import dev.avatcher.cinnamon.core.resources.source.JarCinnamonResources;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -30,10 +27,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -184,25 +181,13 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      * @see ResourcepackServerImpl
      */
     private void initializeResourcepackServer() {
-        boolean active;
+        Map<String, Object> configEntries = this.getConfig().getConfigurationSection(ResourcepackServerConfig.CONFIG_PATH).getValues(true);
+        ResourcepackServerConfig config = new ResourcepackServerConfig(configEntries);
         try {
-            var config = CinnamonPlugin.getInstance().getConfig().getConfigurationSection("resourcepack");
-            Preconditions.checkNotNull(config);
-
-            active = config.getBoolean("do-transmit");
-            int port = config.contains("port")
-                    ? config.getInt("port")
-                    : 9300;
-            URL url = config.contains("url")
-                    ? new URL(config.getString("url"))
-                    : null;
-            String messageJson = config.getString("message");
-            Component message = messageJson == null
-                    ? Component.text("Please install our resourcepack. It is required for a better server experience.")
-                    .color(NamedTextColor.YELLOW)
-                    : JSONComponentSerializer.json().deserialize(messageJson);
-            this.resourcepackServer = new ResourcepackServerImpl(port, url, message);
-            this.registerEvents(this.resourcepackServer);
+            this.resourcepackServer = new ResourcepackServerImpl(config.getPort(), config.getUrl(), config.getMessage());
+            if (config.isForceOnJoin()) {
+                this.registerEvents(this.resourcepackServer);
+            }
         } catch (IOException e) {
             log.log(Level.SEVERE, "An exception occurred while initializing the resourcepack transmitting server.", e);
             return;
@@ -215,6 +200,6 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
         } catch (IOException e) {
             log.log(Level.SEVERE, "An exception occurred while building resource pack's Zip archive.", e);
         }
-        if (active) this.resourcepackServer.start();
+        if (config.isEnabled()) this.resourcepackServer.start();
     }
 }
