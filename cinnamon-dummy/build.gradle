@@ -16,7 +16,3 @@ processResources {
         expand props
     }
 }
-
-jar {
-    archiveBaseName = "cinnamon-dummy"
-}

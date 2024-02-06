@@ -21,14 +21,13 @@ processResources {
 }
 
 jar {
-    archiveBaseName = "cinnamon"
-    archiveClassifier = "default"
+    enabled = false
     dependsOn shadowJar
 }
 
 shadowJar {
-    archiveBaseName = jar.archiveBaseName
     archiveClassifier = null
+    project.configurations.implementation.canBeResolved = true
     configurations = [project.configurations.shadow]
     relocate("dev.jorel.commandapi", "dev.avatcher.cinnamon.core.commandapi")
 }
