@@ -44,14 +44,12 @@ public class NoteblockListener implements Listener {
      * @param event Event
      */
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onNoteblockDestroyed(BlockBreakEvent event) {
+    public void onNoteblockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Stream.of(BlockFace.DOWN, BlockFace.UP)
                 .map(block::getRelative)
                 .filter(b -> b.getType() == Material.NOTE_BLOCK)
                 .forEach(b -> b.getState().update(true, true));
-
-        if (event.getPlayer().getGameMode() == GameMode.CREATIVE) return;
 
         Optional<NoteblockCustomBlock> customBlock = NoteblockCustomBlock.of(block);
         if (customBlock.isEmpty() || NoteblockCustomBlock.isRegularNoteblock(block)) return;
@@ -62,14 +60,9 @@ public class NoteblockListener implements Listener {
                 .build();
         behaviourEvent.fire(customBlock.get().getBehaviour());
         event.setDropItems(false);
-        behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
-
-//        Optional<CustomItem> customItem = CustomItem.get(customBlock.get().getIdentifier());
-//        if (customItem.isEmpty()) return;
-//
-//        ItemStack drop = customItem.get().createItemStack();
-//        event.setDropItems(false);
-//        block.getWorld().dropItemNaturally(block.getLocation(), drop);
+        if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
+        }
     }
 
     /**
