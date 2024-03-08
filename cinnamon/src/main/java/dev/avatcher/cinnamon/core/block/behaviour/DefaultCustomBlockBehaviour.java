@@ -6,5 +6,5 @@ import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
  * Implementation of {@link CustomBlockBehaviour} used by
  * all custom blocks by default
  */
-public class DefaultCustomBlockBehaviour implements CustomBlockBehaviour {
+public final class DefaultCustomBlockBehaviour implements CustomBlockBehaviour {
 }

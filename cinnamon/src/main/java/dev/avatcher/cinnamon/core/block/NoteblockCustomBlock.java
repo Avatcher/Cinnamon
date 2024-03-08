@@ -163,6 +163,8 @@ public class NoteblockCustomBlock implements CustomBlock {
         this.behaviour = behaviour == null
                 ? new DefaultCustomBlockBehaviour()
                 : behaviour;
+        CinnamonPlugin.getInstance().getSLF4JLogger().warn("Set behaviour of '{}' to {}",
+                this.getKey(), this.behaviour.getClass().getSimpleName());
     }
 
     /**
@@ -175,7 +177,10 @@ public class NoteblockCustomBlock implements CustomBlock {
      * @param behaviourClazz Class of block behaviour
      */
     public void setBehaviour(Class<? extends CustomBlockBehaviour> behaviourClazz) {
-        Preconditions.checkNotNull(behaviourClazz);
+        if (behaviourClazz == null) {
+            this.setBehaviour((CustomBlockBehaviour) null);
+            return;
+        }
         Preconditions.checkArgument(CustomBlockBehaviour.class.isAssignableFrom(behaviourClazz),
                 "Custom block behaviour class '%s' does not implement %s interface"
                         .formatted(behaviourClazz, CustomBlockBehaviour.class));

@@ -6,9 +6,11 @@ import com.google.gson.annotations.SerializedName;
 import dev.avatcher.cinnamon.api.blocks.CustomBlock;
 import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
 import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
+import dev.avatcher.cinnamon.api.blocks.behaviour.LootableBlock;
 import dev.avatcher.cinnamon.api.items.behaviour.CustomBlockPlacingItem;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
+import dev.avatcher.cinnamon.core.block.behaviour.DefaultCustomBlockBehaviour;
 import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.json.CBlockDeserializer;
 import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
@@ -26,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * A Cinnamon Module storing custom blocks
@@ -113,6 +116,9 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                                     .behaviour(behaviour)
                                     .build();
                             this.itemsModule.register(item.getKey(), item);
+                            if (customBlock.getBehaviour() instanceof DefaultCustomBlockBehaviour) {
+                                customBlock.setBehaviour(new LootableBlock(List.of(item.createItemStack())));
+                            }
                         }
                     });
             int loaded = this.map.size() - wasLoaded;

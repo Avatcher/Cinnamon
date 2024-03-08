@@ -3,6 +3,7 @@ package dev.avatcher.cinnamon.core.block.listeners;
 import dev.avatcher.cinnamon.api.items.CustomItem;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
+import dev.avatcher.cinnamon.core.block.events.CustomBlockBreakEventImpl;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -55,12 +56,20 @@ public class NoteblockListener implements Listener {
         Optional<NoteblockCustomBlock> customBlock = NoteblockCustomBlock.of(block);
         if (customBlock.isEmpty() || NoteblockCustomBlock.isRegularNoteblock(block)) return;
 
-        Optional<CustomItem> customItem = CustomItem.get(customBlock.get().getIdentifier());
-        if (customItem.isEmpty()) return;
-
-        ItemStack drop = customItem.get().createItemStack();
+        var behaviourEvent = CustomBlockBreakEventImpl.builder()
+                .block(block)
+                .customBlock(customBlock.get())
+                .build();
+        behaviourEvent.fire(customBlock.get().getBehaviour());
         event.setDropItems(false);
-        block.getWorld().dropItemNaturally(block.getLocation(), drop);
+        behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
+
+//        Optional<CustomItem> customItem = CustomItem.get(customBlock.get().getIdentifier());
+//        if (customItem.isEmpty()) return;
+//
+//        ItemStack drop = customItem.get().createItemStack();
+//        event.setDropItems(false);
+//        block.getWorld().dropItemNaturally(block.getLocation(), drop);
     }
 
     /**

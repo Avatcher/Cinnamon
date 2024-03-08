@@ -4,8 +4,10 @@ import dev.avatcher.cinnamon.api.blocks.CustomBlock;
 import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
 import dev.avatcher.cinnamon.api.blocks.events.CustomBlockDestroyEvent;
 import dev.avatcher.cinnamon.core.block.AbstractCustomBlockBehaviourEvent;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +20,9 @@ import java.util.List;
  */
 @Getter
 @Setter
+@SuperBuilder
 public class CustomBlockDestroyEventImpl extends AbstractCustomBlockBehaviourEvent implements CustomBlockDestroyEvent {
+    @Builder.Default
     private List<ItemStack> drop = new LinkedList<>();
 
     /**
