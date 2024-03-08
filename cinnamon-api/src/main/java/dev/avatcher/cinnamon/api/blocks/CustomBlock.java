@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Optional;
@@ -115,5 +116,28 @@ public interface CustomBlock extends Keyed {
      * @param location Location to place
      *                 the custom block at
      */
-    void placeAt(Location location);
+    default void placeAt(Location location) {
+        this.placeAt(location, null);
+    }
+
+    /**
+     * Placed the custom block at the given
+     * location by a specific player.
+     *
+     * @param location Location to place the
+     *                 custom block at
+     * @param player   Player who placed the
+     *                 block
+     */
+    void placeAt(Location location, Player player);
+
+    /**
+     * Gets the behaviour of custom block.
+     * It describes the responses of the block
+     * to various in-game events, such as
+     * its in-world destruction or placement.
+     *
+     * @return Custom block's behaviour
+     */
+    CustomBlockBehaviour getBehaviour();
 }

@@ -1,16 +1,23 @@
 package dev.avatcher.cinnamon.core.block;
 
+import com.google.common.base.Preconditions;
 import dev.avatcher.cinnamon.api.blocks.CustomBlock;
+import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
 import dev.avatcher.cinnamon.core.CinnamonPlugin;
-import lombok.AllArgsConstructor;
+import dev.avatcher.cinnamon.core.block.behaviour.DefaultCustomBlockBehaviour;
+import dev.avatcher.cinnamon.core.block.behaviour.NoteblockBehaviour;
+import dev.avatcher.cinnamon.core.block.events.CustomBlockPlaceEventImpl;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.NoteBlock;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -18,7 +25,6 @@ import java.util.Set;
  * The representation of Cinnamon noteblock-based custom block
  */
 @Getter
-@AllArgsConstructor
 public class NoteblockCustomBlock implements CustomBlock {
     /**
      * A custom block representing a "normal" noteblock
@@ -29,12 +35,52 @@ public class NoteblockCustomBlock implements CustomBlock {
         NamespacedKey noteblockKey = NamespacedKey.minecraft("note_block");
         NamespacedKey noteblockModelKey = NamespacedKey.minecraft("block/note_block");
         NoteblockTune noteblockTune = new NoteblockTune(noteblockKey, (byte) 0, (byte) 0);
-        NOTEBLOCK = new NoteblockCustomBlock(noteblockKey, noteblockModelKey, noteblockTune);
+        NOTEBLOCK = new NoteblockCustomBlock(noteblockKey, noteblockModelKey, noteblockTune, new NoteblockBehaviour());
     }
 
     private final NamespacedKey identifier;
     private final NamespacedKey model;
     private final NoteblockTune tune;
+    private CustomBlockBehaviour behaviour = new DefaultCustomBlockBehaviour();
+
+    /**
+     * Creates a new custom block based
+     * on Minecraft noteblock's blockstates.
+     *
+     * @param key      The identifier of the block,
+     *                 that is later can be used in
+     *                 various methods such as
+     *                 {@link CustomBlock#get(NamespacedKey)}
+     * @param modelKey The key of block's model defined
+     *                 inside a resource pack
+     * @param tune     Noteblock tune reserved by
+     *                 this block
+     */
+    public NoteblockCustomBlock(NamespacedKey key, NamespacedKey modelKey, NoteblockTune tune) {
+        this(key, modelKey, tune, new DefaultCustomBlockBehaviour());
+    }
+
+    /**
+     * Creates a new custom block based
+     * on Minecraft noteblock's blockstates
+     * with some behaviour.
+     *
+     * @param key       The identifier of the block,
+     *                  that is later can be used in
+     *                  various methods such as
+     *                  {@link CustomBlock#get(NamespacedKey)}
+     * @param modelKey  The key of block's model defined
+     *                  inside a resource pack
+     * @param tune      Noteblock tune reserved by
+     *                  this block
+     * @param behaviour The behaviour of the block
+     */
+    public NoteblockCustomBlock(NamespacedKey key, NamespacedKey modelKey, NoteblockTune tune, CustomBlockBehaviour behaviour) {
+        this.identifier = key;
+        this.model = modelKey;
+        this.tune = tune;
+        this.setBehaviour(behaviour);
+    }
 
     /**
      * Gets the note of the noteblock's tune
@@ -65,11 +111,30 @@ public class NoteblockCustomBlock implements CustomBlock {
      *                 block at
      */
     public void placeAt(@NotNull Location location) {
+        this.placeAt(location, null);
+    }
+
+    /**
+     * Places this custom block at a given location
+     * by a specific player.
+     *
+     * @param location Location to place the custom
+     *                 block at
+     * @param player   Player that placed the block
+     */
+    public void placeAt(@NotNull Location location, Player player) {
         Block block = location.getBlock();
         NoteBlock blockData = (NoteBlock) Material.NOTE_BLOCK.createBlockData();
         blockData.setNote(this.tune.getNote());
         blockData.setInstrument(this.tune.getInstrument());
         block.setBlockData(blockData, true);
+
+        CustomBlockPlaceEventImpl.builder()
+                .block(block)
+                .customBlock(this)
+                .player(player)
+                .build()
+                .fire(this.getBehaviour());
     }
 
     /**
@@ -85,6 +150,57 @@ public class NoteblockCustomBlock implements CustomBlock {
     @Override
     public BlockData createBlockData() {
         return null;
+    }
+
+    /**
+     * Sets the behaviour of this block. If
+     * {@code null} is provided, a new instance of
+     * {@link DefaultCustomBlockBehaviour} will be used.
+     *
+     * @param behaviour New behaviour of the block
+     */
+    public void setBehaviour(@Nullable CustomBlockBehaviour behaviour) {
+        this.behaviour = behaviour == null
+                ? new DefaultCustomBlockBehaviour()
+                : behaviour;
+    }
+
+    /**
+     * Sets the behaviour of this block by a new instance
+     * of a given behaviour's class. The method initializes
+     * a new behaviour instance using either the constructor
+     * accepting a single {@link CustomBlock} argument or
+     * the No-Args constructor, if the first one is not found.
+     *
+     * @param behaviourClazz Class of block behaviour
+     */
+    public void setBehaviour(Class<? extends CustomBlockBehaviour> behaviourClazz) {
+        Preconditions.checkNotNull(behaviourClazz);
+        Preconditions.checkArgument(CustomBlockBehaviour.class.isAssignableFrom(behaviourClazz),
+                "Custom block behaviour class '%s' does not implement %s interface"
+                        .formatted(behaviourClazz, CustomBlockBehaviour.class));
+        try {
+            Constructor<? extends CustomBlockBehaviour> constructor = behaviourClazz.getConstructor(CustomBlock.class);
+            CustomBlockBehaviour behaviour = constructor.newInstance(this);
+            this.setBehaviour(behaviour);
+            return;
+        } catch (NoSuchMethodException ignored) {
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            Constructor<? extends CustomBlockBehaviour> constructor = behaviourClazz.getConstructor();
+            CustomBlockBehaviour behaviour = constructor.newInstance();
+            this.setBehaviour(behaviour);
+            return;
+        } catch (NoSuchMethodException ignored) {
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        // Reached, only if two instances of
+        // NoSuchMethodException were thrown
+        throw new IllegalStateException("Custom block behaviour '%s' does not have a matching constructor"
+                .formatted(behaviourClazz));
     }
 
     /**

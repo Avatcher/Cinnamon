@@ -7,6 +7,7 @@ import dev.avatcher.cinnamon.api.items.events.ItemClickBlockEvent;
 import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +60,7 @@ public class CustomBlockPlacingItem extends AbstractStructurePlacingItem {
 
 
     @Override
-    public void placeAt(@NotNull Location location) {
-        block.placeAt(location);
+    public void placeAt(@NotNull Location location, Player player) {
+        block.placeAt(location, player);
     }
 }

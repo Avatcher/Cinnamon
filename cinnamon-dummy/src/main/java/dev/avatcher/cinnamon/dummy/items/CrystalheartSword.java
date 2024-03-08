@@ -9,6 +9,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -84,7 +85,7 @@ public class CrystalheartSword extends AbstractStructurePlacingItem {
     }
 
     @Override
-    public void placeAt(@NotNull Location location) {
+    public void placeAt(@NotNull Location location, Player player) {
         location.getBlock().setType(Material.PINK_STAINED_GLASS);
     }
 

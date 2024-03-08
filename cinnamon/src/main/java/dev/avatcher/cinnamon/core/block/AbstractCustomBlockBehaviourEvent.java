@@ -5,6 +5,7 @@ import dev.avatcher.cinnamon.api.blocks.CustomBlock;
 import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
 import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviourEvent;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,11 +15,21 @@ import java.util.Optional;
  * Abstract implementation of {@link CustomBlockBehaviourEvent}
  */
 @Getter
+@SuperBuilder
 public abstract class AbstractCustomBlockBehaviourEvent implements CustomBlockBehaviourEvent {
 
     private final CustomBlock customBlock;
 
     private final Block block;
+
+    /**
+     * Default constructor needed for builders
+     */
+    @SuppressWarnings("unused")
+    protected AbstractCustomBlockBehaviourEvent() {
+        this.customBlock = null;
+        this.block = null;
+    }
 
     /**
      * Creates a custom block event, trying to find
