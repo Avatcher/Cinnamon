@@ -1,9 +1,13 @@
 package dev.avatcher.cinnamon.core.block.listeners;
 
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
+import dev.avatcher.cinnamon.api.blocks.CustomBlock;
 import dev.avatcher.cinnamon.api.items.CustomItem;
+import dev.avatcher.cinnamon.core.CinnamonPlugin;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
 import dev.avatcher.cinnamon.core.block.events.CustomBlockBreakEventImpl;
+import dev.avatcher.cinnamon.core.block.events.CustomBlockDestroyEventImpl;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -45,24 +49,52 @@ public class NoteblockListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onNoteblockBreak(BlockBreakEvent event) {
+        if (this.updateSurroundings(event.getBlock())) return;
         Block block = event.getBlock();
+        var customBlock = CustomBlock.get(block).orElseThrow();
+
+        var behaviourEvent = CustomBlockBreakEventImpl.builder()
+                .block(block)
+                .customBlock(customBlock)
+                .player(event.getPlayer())
+                .tool(event.getPlayer().getActiveItem())
+                .build();
+        behaviourEvent.fire(customBlock.getBehaviour());
+        event.setDropItems(false);
+        if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
+        }
+    }
+
+    /**
+     * Manages how noteblocks are destroyed.
+     *
+     * @param event Event
+     */
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onNoteblockDestroy(BlockDestroyEvent event) {
+        CinnamonPlugin.getInstance().getSLF4JLogger().warn("Destroyed: " + event.getBlock());
+        if (this.updateSurroundings(event.getBlock())) return;
+        Block block = event.getBlock();
+        CustomBlock customBlock = CustomBlock.get(block).orElseThrow();
+
+        var behaviourEvent = CustomBlockDestroyEventImpl.builder()
+                .block(block)
+                .customBlock(customBlock)
+                .build();
+        behaviourEvent.fire(customBlock.getBehaviour());
+        event.setWillDrop(false);
+        behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
+    }
+
+    private boolean updateSurroundings(Block block) {
         Stream.of(BlockFace.DOWN, BlockFace.UP)
                 .map(block::getRelative)
                 .filter(b -> b.getType() == Material.NOTE_BLOCK)
                 .forEach(b -> b.getState().update(true, true));
 
         Optional<NoteblockCustomBlock> customBlock = NoteblockCustomBlock.of(block);
-        if (customBlock.isEmpty() || NoteblockCustomBlock.isRegularNoteblock(block)) return;
-
-        var behaviourEvent = CustomBlockBreakEventImpl.builder()
-                .block(block)
-                .customBlock(customBlock.get())
-                .build();
-        behaviourEvent.fire(customBlock.get().getBehaviour());
-        event.setDropItems(false);
-        if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
-            behaviourEvent.getDrop().forEach(itemStack -> block.getWorld().dropItemNaturally(block.getLocation(), itemStack));
-        }
+        return customBlock.isEmpty() || NoteblockCustomBlock.isRegularNoteblock(block);
     }
 
     /**
