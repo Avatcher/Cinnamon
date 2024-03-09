@@ -29,7 +29,7 @@ public abstract class AbstractStructurePlacingItem extends AbstractCooldownItem 
         this.coolDown(event.getPlayer());
         Location placeLocation = blockEvent.getBlock().getRelative(blockEvent.getBlockFace()).getLocation();
         if (this.isPlaceableLocation(placeLocation)) {
-            this.placeAt(placeLocation);
+            this.placeAt(placeLocation, event.getPlayer());
             this.afterSuccessfulPlacement(blockEvent, placeLocation);
         }
     }

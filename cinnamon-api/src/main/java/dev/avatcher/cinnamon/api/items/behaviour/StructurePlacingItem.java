@@ -2,6 +2,7 @@ package dev.avatcher.cinnamon.api.items.behaviour;
 
 import dev.avatcher.cinnamon.api.items.events.ItemClickBlockEvent;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -23,8 +24,9 @@ public interface StructurePlacingItem extends CooldownItem {
      *
      * @param location Location where to place
      *                 the structure
+     * @param player   Player who placed the block
      */
-    void placeAt(@NotNull Location location);
+    void placeAt(@NotNull Location location, Player player);
 
     /**
      * Performs an action after structure was

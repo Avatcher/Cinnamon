@@ -1,4 +1,5 @@
 {
 	"identifier": "crystalheart_ore",
-	"model": "cdummy:block/crystalheart_ore"
+	"model": "cdummy:block/crystalheart_ore",
+	"class": "dev.avatcher.cinnamon.dummy.blocks.CrystalheartOre"
 }

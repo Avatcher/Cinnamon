@@ -4,10 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import dev.avatcher.cinnamon.api.blocks.CustomBlock;
+import dev.avatcher.cinnamon.api.blocks.CustomBlockBehaviour;
 import dev.avatcher.cinnamon.api.blocks.CustomBlocksRegistry;
+import dev.avatcher.cinnamon.api.blocks.behaviour.LootableBlock;
 import dev.avatcher.cinnamon.api.items.behaviour.CustomBlockPlacingItem;
 import dev.avatcher.cinnamon.core.block.NoteblockCustomBlock;
 import dev.avatcher.cinnamon.core.block.NoteblockTune;
+import dev.avatcher.cinnamon.core.block.behaviour.DefaultCustomBlockBehaviour;
 import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.json.CBlockDeserializer;
 import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
@@ -25,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * A Cinnamon Module storing custom blocks
@@ -89,6 +93,17 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                     .forEach(request -> {
                         NoteblockTune noteblockTune = this.noteblockTuneModule.getFreeTone(request.getIdentifier());
                         NoteblockCustomBlock customBlock = new NoteblockCustomBlock(request.getIdentifier(), request.getModel(), noteblockTune);
+
+                        if (request.getBehaviourClazz() != null
+                                && !CustomBlockBehaviour.class.isAssignableFrom(request.getBehaviourClazz())) {
+                            log.severe("Custom block behaviour '%s' does not implement %s"
+                                    .formatted(request.getBehaviourClazz().getName(), CustomBlockBehaviour.class.getName()));
+                            log.severe("Custom block '%s' will use default block behaviour"
+                                    .formatted(customBlock.getKey()));
+                        } else {
+                            customBlock.setBehaviour((Class<? extends CustomBlockBehaviour>) request.getBehaviourClazz());
+                        }
+
                         this.register(customBlock.getIdentifier(), customBlock);
                         if (request.isItemRequested()) {
                             NamespacedKey modelKey = new NamespacedKey(customBlock.getIdentifier().getNamespace(), "block/" + customBlock.getIdentifier().getKey());
@@ -101,6 +116,9 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                                     .behaviour(behaviour)
                                     .build();
                             this.itemsModule.register(item.getKey(), item);
+                            if (customBlock.getBehaviour() instanceof DefaultCustomBlockBehaviour) {
+                                customBlock.setBehaviour(new LootableBlock(List.of(item.createItemStack())));
+                            }
                         }
                     });
             int loaded = this.map.size() - wasLoaded;
@@ -126,6 +144,7 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
     public static class BlockRegistrationRequest {
         private NamespacedKey identifier;
         private NamespacedKey model;
+        private Class<?> behaviourClazz;
         @Builder.Default
         @SerializedName("create-item")
         private boolean itemRequested = true;
