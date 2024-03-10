@@ -71,6 +71,6 @@ public record NoteblockTune(NamespacedKey key, byte note, byte instrument) imple
 
     @Override
     public @NotNull NamespacedKey getKey() {
-        return null;
+        return this.key();
     }
 }
