@@ -102,7 +102,7 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                             log.severe("Custom block '%s' will use default block behaviour"
                                     .formatted(customBlock.getKey()));
                         } else {
-                            customBlock.setBehaviour((Class<? extends CustomBlockBehaviour>) request.getBehaviourClazz());
+                            customBlock.setBehaviour(request.getBehaviourClazz());
                         }
 
                         this.register(customBlock.getIdentifier(), customBlock);

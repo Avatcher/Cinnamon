@@ -176,7 +176,7 @@ public class NoteblockCustomBlock implements CustomBlock {
      *
      * @param behaviourClazz Class of block behaviour
      */
-    public void setBehaviour(Class<? extends CustomBlockBehaviour> behaviourClazz) {
+    public void setBehaviour(Class<?> behaviourClazz) {
         if (behaviourClazz == null) {
             this.setBehaviour((CustomBlockBehaviour) null);
             return;
@@ -184,8 +184,10 @@ public class NoteblockCustomBlock implements CustomBlock {
         Preconditions.checkArgument(CustomBlockBehaviour.class.isAssignableFrom(behaviourClazz),
                 "Custom block behaviour class '%s' does not implement %s interface"
                         .formatted(behaviourClazz, CustomBlockBehaviour.class));
+        @SuppressWarnings("unchecked")
+        Class<? extends CustomBlockBehaviour> clazz = (Class<? extends CustomBlockBehaviour>) behaviourClazz;
         try {
-            Constructor<? extends CustomBlockBehaviour> constructor = behaviourClazz.getConstructor(CustomBlock.class);
+            Constructor<? extends CustomBlockBehaviour> constructor = clazz.getConstructor(CustomBlock.class);
             CustomBlockBehaviour behaviour = constructor.newInstance(this);
             this.setBehaviour(behaviour);
             return;
@@ -194,7 +196,7 @@ public class NoteblockCustomBlock implements CustomBlock {
             throw new RuntimeException(e);
         }
         try {
-            Constructor<? extends CustomBlockBehaviour> constructor = behaviourClazz.getConstructor();
+            Constructor<? extends CustomBlockBehaviour> constructor = clazz.getConstructor();
             CustomBlockBehaviour behaviour = constructor.newInstance();
             this.setBehaviour(behaviour);
             return;
