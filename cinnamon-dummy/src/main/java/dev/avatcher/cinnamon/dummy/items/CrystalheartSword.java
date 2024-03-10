@@ -29,6 +29,10 @@ public class CrystalheartSword extends AbstractStructurePlacingItem {
     private static final int DECAY_TIME = 3 * 20;
     private final ConcurrentMap<UUID, ConcurrentLinkedQueue<Location>> placedBlocks = new ConcurrentHashMap<>();
 
+    /**
+     * Default constructor Cinnamon may use
+     * to create an instance of item's behaviour.
+     */
     public CrystalheartSword() {
         super(CDummy.getInstance());
     }

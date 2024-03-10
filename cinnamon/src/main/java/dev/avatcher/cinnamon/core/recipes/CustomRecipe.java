@@ -6,6 +6,11 @@ import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Recipe;
 
+/**
+ * A wrapper for Bukkit's {@link Recipe} containing
+ * a {@link NamespacedKey} that may be used to later
+ * reference to this recipe.
+ */
 @Getter
 @AllArgsConstructor
 public class CustomRecipe implements Keyed {
