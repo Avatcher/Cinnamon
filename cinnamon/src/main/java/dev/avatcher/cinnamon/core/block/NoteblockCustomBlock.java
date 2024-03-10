@@ -124,10 +124,7 @@ public class NoteblockCustomBlock implements CustomBlock {
      */
     public void placeAt(@NotNull Location location, Player player) {
         Block block = location.getBlock();
-        NoteBlock blockData = (NoteBlock) Material.NOTE_BLOCK.createBlockData();
-        blockData.setNote(this.tune.getNote());
-        blockData.setInstrument(this.tune.getInstrument());
-        block.setBlockData(blockData, true);
+        block.setBlockData(this.createBlockData(), true);
 
         CustomBlockPlaceEventImpl.builder()
                 .block(block)
@@ -149,7 +146,10 @@ public class NoteblockCustomBlock implements CustomBlock {
 
     @Override
     public BlockData createBlockData() {
-        return null;
+        NoteBlock blockData = (NoteBlock) Material.NOTE_BLOCK.createBlockData();
+        blockData.setNote(this.tune.getNote());
+        blockData.setInstrument(this.tune.getInstrument());
+        return blockData;
     }
 
     /**
