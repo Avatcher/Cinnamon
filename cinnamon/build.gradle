@@ -1,9 +1,13 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'maven-publish'
+    id 'java-library'
 }
 
+version = "0.1.0"
+
 dependencies {
-    shadow project(":cinnamon-api")
+    api project(":cinnamon-api")
     shadow "dev.jorel:commandapi-bukkit-shade:9.3.0"
 
     compileOnly 'io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT'
@@ -21,13 +25,26 @@ processResources {
 }
 
 jar {
-    enabled = false
     dependsOn shadowJar
 }
 
 shadowJar {
-    archiveClassifier = null
-    project.configurations.implementation.canBeResolved = true
-    configurations = [project.configurations.shadow]
+    archiveClassifier = "plugin"
+    project.configurations.api.canBeResolved = true
+    configurations = [project.configurations.shadow, project.configurations.api]
     relocate("dev.jorel.commandapi", "dev.avatcher.cinnamon.core.commandapi")
+}
+
+java {
+    withSourcesJar()
+    // TODO: Fix Javadoc comments, so Javadocs can actually compile
+//    withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven (MavenPublication) {
+            from components.java
+        }
+    }
 }
