@@ -75,8 +75,7 @@ public class CGiveCommand implements CommandBase {
                     Component.translatable("commands.give.success.multiple")
                             .args(
                                     Component.text(amount),
-                                    Component.translatable("chat.square_brackets")
-                                            .args(itemStack.displayName()),
+                                    itemStack.displayName(),
                                     Component.text(targets.size())
                             )
             );
@@ -86,8 +85,7 @@ public class CGiveCommand implements CommandBase {
                     Component.translatable("commands.give.success.single")
                             .args(
                                     Component.text(amount),
-                                    Component.translatable("chat.square_brackets")
-                                            .args(itemStack.displayName()),
+                                    itemStack.displayName(),
                                     Component.text(target.getName())
                             )
             );
