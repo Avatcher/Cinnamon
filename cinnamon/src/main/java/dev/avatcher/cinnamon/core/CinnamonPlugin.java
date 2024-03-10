@@ -19,6 +19,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,7 +31,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -186,8 +186,11 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      * @see ResourcepackServerImpl
      */
     private void initializeResourcepackServer() {
-        Map<String, Object> configEntries = this.getConfig().getConfigurationSection(ResourcepackServerConfig.CONFIG_PATH).getValues(true);
-        ResourcepackServerConfig config = new ResourcepackServerConfig(configEntries);
+        ConfigurationSection configSection = this.getConfig().getConfigurationSection(ResourcepackServerConfig.CONFIG_PATH);
+        if (configSection == null) {
+            configSection = this.getConfig().createSection(ResourcepackServerConfig.CONFIG_PATH);
+        }
+        ResourcepackServerConfig config = new ResourcepackServerConfig(configSection);
         try {
             this.resourcepackServer = new ResourcepackServerImpl(config.getPort(), config.getUrl(), config.getMessage());
             if (config.isForceOnJoin()) {
