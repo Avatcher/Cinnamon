@@ -3,6 +3,7 @@ package dev.avatcher.cinnamon.core.resources.resourcepack;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,6 +44,20 @@ public final class ResourcepackServerConfig implements ConfigurationSerializable
             throw new RuntimeException(e);
         }
         this.message = JSONComponentSerializer.json().deserialize((String) state.get("message"));
+    }
+
+    public ResourcepackServerConfig(ConfigurationSection config) {
+        this.enabled = config.getBoolean("enabled", true);
+        this.forceOnJoin = config.getBoolean("force-on-join", true);
+        this.port = config.getInt("port", 9300);
+        try {
+            String urlString = config.getString("url", "http://localhost:" + this.port);
+            this.url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        String messageJson = config.getString("message", "{\"text\": \"Please install our resourcepack.\\nIt is required for a better server experience.\", \"color\": \"yellow\"}");
+        this.message = JSONComponentSerializer.json().deserialize(messageJson);
     }
 
     @Override

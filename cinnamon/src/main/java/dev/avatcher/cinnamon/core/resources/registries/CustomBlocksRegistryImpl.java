@@ -15,6 +15,7 @@ import dev.avatcher.cinnamon.core.item.CustomItemImpl;
 import dev.avatcher.cinnamon.core.json.CBlockDeserializer;
 import dev.avatcher.cinnamon.core.resources.CinnamonRegistry;
 import dev.avatcher.cinnamon.core.resources.CinnamonResources;
+import dev.avatcher.cinnamon.core.resources.CustomModelData;
 import lombok.Builder;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -101,18 +102,20 @@ public class CustomBlocksRegistryImpl extends AbstractCinnamonRegistry<CustomBlo
                             log.severe("Custom block '%s' will use default block behaviour"
                                     .formatted(customBlock.getKey()));
                         } else {
-                            customBlock.setBehaviour((Class<? extends CustomBlockBehaviour>) request.getBehaviourClazz());
+                            customBlock.setBehaviour(request.getBehaviourClazz());
                         }
 
                         this.register(customBlock.getIdentifier(), customBlock);
                         if (request.isItemRequested()) {
                             NamespacedKey modelKey = new NamespacedKey(customBlock.getIdentifier().getNamespace(), "block/" + customBlock.getIdentifier().getKey());
                             CustomBlockPlacingItem behaviour = new CustomBlockPlacingItem(resources.getPlugin(), customBlock);
+                            CustomModelData model = CustomModelData.of(modelKey)
+                                    .orElseGet(() -> customModelDataModule.createAndRegister(modelKey));
                             CustomItemImpl item = CustomItemImpl.builder()
                                     .identifier(customBlock.getIdentifier())
                                     .name(Component.translatable("block." + customBlock.getIdentifier().getNamespace() + "." + customBlock.getIdentifier().getKey())
                                             .decoration(TextDecoration.ITALIC, false))
-                                    .model(customModelDataModule.createAndRegister(modelKey))
+                                    .model(model)
                                     .behaviour(behaviour)
                                     .build();
                             this.itemsModule.register(item.getKey(), item);
