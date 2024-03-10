@@ -13,6 +13,20 @@ import org.jetbrains.annotations.Nullable;
  * @see CustomBlockDestroyEvent
  */
 public interface CustomBlockBreakEvent extends CustomBlockDestroyEvent {
+    /**
+     * Gets the player who broke this block.
+     *
+     * @return Player who brok this block
+     */
     Player getPlayer();
+
+    /**
+     * Gets the tool player used to break
+     * this block. It is simply the item
+     * player held in their main hand in
+     * order to break this block.
+     *
+     * @return Item used to break this block
+     */
     @Nullable ItemStack getTool();
 }

@@ -145,6 +145,11 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
         }
     }
 
+    /**
+     * Executed only after ALL the plugins
+     * on the server have been enabled, aka
+     * called {@link Plugin#onEnable()}.
+     */
     public void afterAllPluginsEnabled() {
         try {
             this.resourcesManager.getResourcePackBuilder().build();

@@ -10,8 +10,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+/**
+ * Configuration of {@link dev.avatcher.cinnamon.api.resources.ResourcepackServer}
+ */
 @Getter
 public final class ResourcepackServerConfig implements ConfigurationSerializable {
+    /**
+     * The main config's subsection name
+     * containing this config.
+     */
     public static final String CONFIG_PATH = "resourcepack-server";
 
     private final boolean enabled;
@@ -20,6 +27,12 @@ public final class ResourcepackServerConfig implements ConfigurationSerializable
     private final URL url;
     private final Component message;
 
+    /**
+     * Builds config from given map
+     * of configuration values.
+     *
+     * @param state Values of the config
+     */
     public ResourcepackServerConfig(Map<String, Object> state) {
         this.enabled = (boolean) state.get("enabled");
         this.forceOnJoin  = (boolean) state.get("force-on-join");

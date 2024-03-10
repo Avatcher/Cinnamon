@@ -19,6 +19,11 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Builder for Minecraft resource pack,
+ * responsible both for creating a structured
+ * resourcepack folder and its ZIP file.
+ */
 public class ResourcePackBuilder {
     /**
      * Default pack.mcmeta file to be inserted in resourcepack
