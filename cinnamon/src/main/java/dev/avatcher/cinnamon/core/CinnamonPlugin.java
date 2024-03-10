@@ -63,8 +63,8 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
      * @param plugin Plugin containing Cinnamon resources
      */
     public void load(Plugin plugin) {
-        try {
-            this.load(new JarCinnamonResources(plugin));
+        try (var resources = new JarCinnamonResources(plugin)) {
+            this.load(resources);
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
