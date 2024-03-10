@@ -163,7 +163,7 @@ public class NoteblockCustomBlock implements CustomBlock {
         this.behaviour = behaviour == null
                 ? new DefaultCustomBlockBehaviour()
                 : behaviour;
-        CinnamonPlugin.getInstance().getSLF4JLogger().warn("Set behaviour of '{}' to {}",
+        CinnamonPlugin.getInstance().getSLF4JLogger().info("Set behaviour of custom block '{}' to {}",
                 this.getKey(), this.behaviour.getClass().getSimpleName());
     }
 
