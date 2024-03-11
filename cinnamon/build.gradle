@@ -2,6 +2,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'maven-publish'
     id 'java-library'
+    id 'signing'
 }
 
 version = "0.1.0"
@@ -47,4 +48,8 @@ publishing {
             from components.java
         }
     }
+}
+
+signing {
+    sign publishing.publications.maven
 }
