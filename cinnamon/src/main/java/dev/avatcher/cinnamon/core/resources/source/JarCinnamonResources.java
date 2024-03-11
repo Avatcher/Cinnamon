@@ -46,16 +46,23 @@ public class JarCinnamonResources implements CinnamonResources {
      *
      * @param plugin Plugin owning the resources
      * @param resource Class from the jar containing the resources
+     * @throws IOException If an IOException is thrown during
+     *                     resources initialization process
      */
-    public JarCinnamonResources(Plugin plugin, Class<?> resource) throws IOException, URISyntaxException {
+    public JarCinnamonResources(Plugin plugin, Class<?> resource) throws IOException {
         this.plugin = plugin;
         this.clazz = resource;
-        String jarPath = resource
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI()
-                .getPath();
+        String jarPath;
+        try {
+            jarPath = resource
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()
+                    .getPath();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         URI uri = URI.create("jar:file:" + jarPath);
         this.fileSystem = FileSystems.newFileSystem(uri, Map.of());
         this.folder = fileSystem.getPath(CINNAMON_FOLDER);
@@ -67,8 +74,10 @@ public class JarCinnamonResources implements CinnamonResources {
      * of a certain plugin.
      *
      * @param plugin Plugin owning the resources
+     * @throws IOException If an IOException is thrown during
+     *                     resources initialization process
      */
-    public JarCinnamonResources(Plugin plugin) throws IOException, URISyntaxException {
+    public JarCinnamonResources(Plugin plugin) throws IOException {
         this(plugin, plugin.getClass());
     }
 

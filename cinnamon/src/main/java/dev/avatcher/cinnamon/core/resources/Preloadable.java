@@ -15,6 +15,8 @@ public interface Preloadable {
      *
      * @param folder Path to the folder where
      *               the data is stored
+     * @throws IOException If an exception is thrown
+     *                     when preloading resources
      */
     void preload(Path folder) throws IOException;
 
@@ -23,6 +25,8 @@ public interface Preloadable {
      *
      * @param folder Path to the folder where
      *               the data is stored
+     * @throws IOException If an exception is thrown
+     *                     when saving resources
      */
     void savePreload(Path folder) throws IOException;
 }

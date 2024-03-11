@@ -26,6 +26,9 @@ public abstract class AbstractCinnamonRegistry<T extends Keyed> implements Cinna
      */
     protected final Class<T> clazz;
 
+    /**
+     * Logger
+     */
     protected final Logger log;
 
     /**

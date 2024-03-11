@@ -64,6 +64,8 @@ public class ResourcePackBuilder {
      * building a pack at given location.
      *
      * @param outFolder Folder to build the resourcepack in
+     * @throws IOException If an IOException is thrown during
+     *                     this builder's initialization process
      */
     public ResourcePackBuilder(Path outFolder) throws IOException {
         Preconditions.checkNotNull(outFolder);
@@ -78,6 +80,8 @@ public class ResourcePackBuilder {
      * into the resourcepack.
      *
      * @param resources Resources containing assets
+     * @throws IOException If an IOException is thrown during
+     *                     new assets registration
      */
     public void registerAssets(CinnamonResources resources) throws IOException {
         Path assets = resources.getAssetsFolder();
@@ -98,6 +102,10 @@ public class ResourcePackBuilder {
     /**
      * Builds resourcepack generating
      * all the necessary files.
+     *
+     * @throws IOException If an IOException is thrown when
+     *                     finishing the building process
+     *                     of this resourcepack
      */
     public void build() throws IOException {
         Preconditions.checkNotNull(this.outFolder);
@@ -112,6 +120,9 @@ public class ResourcePackBuilder {
      * and returns it as an array of bytes.
      *
      * @return Bytes of .zip archive
+     * @throws IOException If an IOException is thrown when
+     *                     building ZIP file for this
+     *                     resourcepack
      */
     public byte[] buildZip() throws IOException {
         Path zipFile = Files.createTempFile("cinnamon", "resourcepack.zip");
@@ -137,6 +148,9 @@ public class ResourcePackBuilder {
 
     /**
      * Deletes previously generated resourcepack files.
+     *
+     * @throws IOException If an IOException is thrown while
+     *                     removing previously built resourcepack
      */
     public void clear() throws IOException {
         if (!Files.exists(this.outAssets)) return;

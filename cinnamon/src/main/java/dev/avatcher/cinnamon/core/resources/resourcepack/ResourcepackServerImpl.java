@@ -61,6 +61,10 @@ public class ResourcepackServerImpl implements ResourcepackServer, HttpHandler, 
      * @param port The port of the http server
      * @param url URL link to download the resourcepack
      * @param message Message for when player is suggested to install resourcepack
+     *
+     * @throws IOException If an IOException is thrown while
+     *                     initializing HTTP server for transmitting
+     *                     the resourcepack
      */
     public ResourcepackServerImpl(int port, @Nullable URL url, Component message) throws IOException {
         this.log = CinnamonPlugin.getInstance().getLogger();

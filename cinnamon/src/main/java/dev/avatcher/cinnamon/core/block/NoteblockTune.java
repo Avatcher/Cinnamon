@@ -10,6 +10,15 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A representation of a Minecraft noteblock tune,
  * including its note and instrument.
+ *
+ * @param key Identifier of the custom block this
+ *            noteblock tune belongs to
+ * @param note Note of this noteblock tune set in-game
+ *             by right-clicking a noteblock
+ * @param instrument Instrument of this noteblock tune
+ *                   set in-game by changing block
+ *                   underneath a noteblock or placing
+ *                   a mob head on top of it
  */
 public record NoteblockTune(NamespacedKey key, byte note, byte instrument) implements Keyed {
     /**
@@ -33,10 +42,9 @@ public record NoteblockTune(NamespacedKey key, byte note, byte instrument) imple
     }
 
     /**
-     * <p>Gets a minecraft name of the noteblock's instrument.</p>
-     *
+     * Gets a minecraft name of the noteblock's instrument.
      * <p>
-     *     All possible values include:
+     * All possible values include:
      * <ul>
      *     <li>{@code bass}</li>
      *     <li>{@code snare}</li>
@@ -60,7 +68,6 @@ public record NoteblockTune(NamespacedKey key, byte note, byte instrument) imple
      *     <li>{@code ender_dragon}</li>
      *     <li>{@code harp}</li>
      * </ul>
-     * </p>
      *
      * @return Minecraft name of this tune's instrument
      */

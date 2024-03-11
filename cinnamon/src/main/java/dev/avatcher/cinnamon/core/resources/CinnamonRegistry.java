@@ -41,6 +41,8 @@ public interface CinnamonRegistry<T extends Keyed> extends Registry<T> {
      * Loads resources from {@link CinnamonResources}.
      *
      * @param resources Cinnamon resources
+     * @throws IOException If an exception occurred when
+     *                     reading Cinnamon resources
      */
     void load(@NotNull CinnamonResources resources) throws IOException;
 }

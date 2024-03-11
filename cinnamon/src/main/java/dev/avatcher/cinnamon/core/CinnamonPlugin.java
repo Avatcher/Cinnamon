@@ -27,7 +27,6 @@ import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -57,6 +56,12 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
     private ResourcepackServerImpl resourcepackServer;
 
     /**
+     * Default constructor needed to instance this plugin
+     */
+    public CinnamonPlugin() {
+    }
+
+    /**
      * Loads Cinnamon resources from plugin's jar
      * folder {@value JarCinnamonResources#CINNAMON_FOLDER}.
      *
@@ -65,7 +70,7 @@ public final class CinnamonPlugin extends JavaPlugin implements CinnamonAPI {
     public void load(Plugin plugin) {
         try (var resources = new JarCinnamonResources(plugin)) {
             this.load(resources);
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

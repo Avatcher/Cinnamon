@@ -46,6 +46,12 @@ public final class ResourcepackServerConfig implements ConfigurationSerializable
         this.message = JSONComponentSerializer.json().deserialize((String) state.get("message"));
     }
 
+    /**
+     * Creates this config instance using values
+     * from given configuration section.
+     *
+     * @param config Configuration section
+     */
     public ResourcepackServerConfig(ConfigurationSection config) {
         this.enabled = config.getBoolean("enabled", true);
         this.forceOnJoin = config.getBoolean("force-on-join", true);
