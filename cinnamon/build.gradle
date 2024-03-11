@@ -25,10 +25,6 @@ processResources {
     }
 }
 
-jar {
-    dependsOn shadowJar
-}
-
 shadowJar {
     archiveClassifier = "plugin"
     project.configurations.api.canBeResolved = true
@@ -38,14 +34,15 @@ shadowJar {
 
 java {
     withSourcesJar()
-    // TODO: Fix Javadoc comments, so Javadocs can actually compile
-//    withJavadocJar()
+    withJavadocJar()
 }
 
 publishing {
     publications {
         maven (MavenPublication) {
-            from components.java
+            artifact jar
+            artifact sourcesJar
+            artifact javadocJar
         }
     }
 }
