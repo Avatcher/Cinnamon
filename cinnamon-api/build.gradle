@@ -21,6 +21,29 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+
+            pom {
+                name = "Cinnamon API"
+                description = "The API of Cinnamon framework"
+                url = "https://github.com/Avatcher/Cinnamon"
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "https://opensource.org/license/mit"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "Dmytro Pravdin"
+                        email = "pravdindmytro@gmail.com"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/Avatcher/Cinnamon.git"
+                    developerConnection = "scm:git:ssh://github.com:Avatcher/Cinnamon.git"
+                    url = "https://github.com/Avatcher/Cinnamon/tree/main"
+                }
+            }
         }
     }
 }
