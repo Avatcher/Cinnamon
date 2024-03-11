@@ -40,11 +40,6 @@ public class ResourcePackBuilder {
 
     private static final String BLOCK_MODEL_OVERRIDE_TEMPLATE = readResource("resourcepack/block_model_override.tjson");
 
-    /**
-     * Path to Cinnamon's data folder with resource pack
-     */
-    private static final String RESOURCE_PACK_FOLDER = "resourcepack/";
-
     private static String readResource(String path) {
         try (var in = CinnamonPlugin.class.getClassLoader().getResourceAsStream(path)) {
             assert in != null;
